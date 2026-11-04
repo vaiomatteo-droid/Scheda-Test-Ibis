@@ -6,13 +6,13 @@
 <title>Scheda di valutazione funzionale</title>
 <style>
 :root{
-  --bg:#0b1d21; --panel:#12292e; --panel2:#17343a; --line:#24474e;
-  --teal:#2fb3a6; --teal2:#1f8a80; --text:#e8f3f2; --muted:#93b3b0;
+  --bg:#0f1a24; --panel:#152331; --panel2:#1b2d3e; --line:#2b4258;
+  --teal:#8fb8db; --teal2:#3e6a90; --text:#e8eef4; --muted:#9db1c3;
   --warn:#e5b94a; --bad:#e46a5e; --ok:#58c98b;
 }
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--bg);color:var(--text);font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
-header{position:sticky;top:0;z-index:20;background:rgba(11,29,33,.96);border-bottom:1px solid var(--line);padding:10px 14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+header{position:sticky;top:0;z-index:20;background:#0f1a24;border-bottom:1px solid var(--line);padding:10px 14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 header h1{font-size:17px;margin:0;flex:1 1 200px;color:var(--teal)}
 nav{display:flex;gap:6px}
 button{font:inherit;color:var(--text);background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:9px 14px;cursor:pointer;min-height:42px}
@@ -60,7 +60,7 @@ details.dist>summary::-webkit-details-marker{display:none}
 .segb.on-a{background:#1e4d3a;border-color:var(--ok)}
 .segb.on-p{background:#4d2a26;border-color:var(--bad)}
 .tog{margin:6px 14px}
-.prevhint{margin-top:6px;color:#b9d7d3}
+.prevhint{margin-top:6px;color:#bccde0}
 .hidebtn{min-height:30px;padding:2px 10px;font-size:12px;color:var(--muted)}
 .affrow{padding:4px 14px 12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .affrow label{margin:0}
@@ -73,7 +73,7 @@ td.st-bad{background:rgba(228,106,94,.22)}
 .list-item{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:12px 0;border-top:1px solid var(--line);flex-wrap:wrap}
 .list-item:first-child{border-top:0}
 .meta{font-size:13px;color:var(--muted)}
-.savebar{position:fixed;left:0;right:0;bottom:0;background:rgba(11,29,33,.97);border-top:1px solid var(--line);padding:10px 14px;display:flex;gap:8px;align-items:center;justify-content:center;z-index:25;flex-wrap:wrap}
+.savebar{position:fixed;left:0;right:0;bottom:0;background:rgba(15,26,36,.97);border-top:1px solid var(--line);padding:10px 14px;display:flex;gap:8px;align-items:center;justify-content:center;z-index:25;flex-wrap:wrap}
 .status{font-size:13px;color:var(--muted);flex:1 1 100%;text-align:center}
 #sw{position:fixed;right:12px;bottom:112px;z-index:30}
 #swbtn{border-radius:999px;background:var(--teal2);border-color:var(--teal);font-weight:600}
@@ -577,7 +577,7 @@ function rowBlock(r, touch, onHide){
   rowUIs[r.id]=ui;
   const ph = cur.prev ? prevText(r, cur.prev.values||{}, ctxOf(cur)) : '';
   const phEl = cur.prev ? el('div',{class:'meta prevhint',text:'Precedente ('+fmtDate(cur.prev.date)+'): '+(ph||'non rilevato')}) : null;
-  if(r.kind==='derived'){ ui.der=el('div',{class:'flags'}); wrap.append(ui.der, ui.flags, phEl); return wrap; }
+  if(r.kind==='derived'){ ui.der=el('div',{class:'flags'}); wrap.append(...[ui.der, ui.flags, phEl].filter(Boolean)); return wrap; }
   const v = cur.values[r.id] || (cur.values[r.id]={});
   const sides=el('div',{class:'sides'+(r.bi?'':' one')});
   function mk(key,lab){
@@ -602,7 +602,7 @@ function rowBlock(r, touch, onHide){
     return el('div',null, el('label',{text:lab+(r.kind==='num'&&r.unit?' ('+r.unit+')':'')}), inp);
   }
   if(r.bi) sides.append(mk('dx','Destra'), mk('sx','Sinistra')); else sides.append(mk('val','Valore'));
-  wrap.append(sides, phEl, ui.flags);
+  wrap.append(...[sides, phEl, ui.flags].filter(Boolean));
   const note=el('div',{class:'note'}, el('input',{type:'text',placeholder:'Note (dolore, compensi, qualità del movimento…)',value:cur.notes[r.id]||''}));
   note.firstChild.addEventListener('input',e=>{ cur.notes[r.id]=e.target.value; dirty=true; setStatus('Modifiche non ancora nel PDF'); saveDraft(); });
   wrap.append(note);
