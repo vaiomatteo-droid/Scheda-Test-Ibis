@@ -217,6 +217,9 @@ const DISTRICTS = [
     rom('k_ext','Estensione','Stessa posizione e stesso punto, movimento in direzione opposta.',45,{bi:false}),
     rom('k_lat','Flessione laterale','Seduto. Device sulla sommità del capo, ruotato di 90° (orientamento destra-sinistra). Azzerare in neutro. Orecchio verso la spalla, un lato per volta.',45),
     rom('k_rot','Rotazione','SUPINO, capo appoggiato al lettino. Device al centro della fronte. Azzerare a viso rivolto al soffitto. Mento verso la spalla, un lato per volta.',60)
+  ]},
+  {title:'B — Forza isometrica (make test)', note:'3 prove, si registra il massimo. Test a valore unico: si legge come andamento nel tempo dello stesso soggetto.', rows:[
+    numf('k_fext','Estensione cervicale','Seduto, cuscinetto dietro la nuca appoggiato al muro. Il soggetto spinge verso il muro retroponendo la nuca.','kg',{ref:'Confronto pre/post'})
   ]}
  ]},
  {id:'rachide', name:'6 · Rachide dorso-lombare / Core', sections:[
