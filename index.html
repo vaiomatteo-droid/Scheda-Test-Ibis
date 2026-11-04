@@ -95,7 +95,7 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
   <nav>
     <button id="navList" class="active">Home</button>
     <button id="navNew" class="primary">+ Nuova</button>
-    <button id="navSet">⚙ Batteria</button>
+    <button id="navSet">⚙ Scegli i test</button>
   </nav>
 </header>
 <main id="main"></main>
@@ -478,7 +478,7 @@ function persistHidden(){
   cfgTimer=setTimeout(async()=>{ try{ await db.doc('config/batteria').set({hidden:[...hidden],updated:Date.now()}); }catch(e){ const n=$('#setstatus'); if(n) n.textContent='Impostazione salvata solo su questo dispositivo ('+(e&&e.code||'errore')+').'; } },600);
 }
 function renderSettings(m){
-  m.append(el('div',{class:'info',text:'Scegli quali test fanno parte della tua batteria. I test spenti spariscono dalla compilazione di tutte le schede; i dati già salvati restano e puoi riattivarli in qualsiasi momento.'}));
+  m.append(el('div',{class:'info',text:'Accendi i test che usi e spegni quelli che non usi. I test spenti spariscono dalla compilazione di tutte le schede; i dati già salvati restano e puoi riattivarli in qualsiasi momento.'}));
   const st=el('div',{class:'meta',id:'setstatus',style:'margin:-6px 0 12px'}); m.append(st);
   st.textContent='La scelta è salvata in questo browser: su un altro dispositivo va ripetuta.';
   DISTRICTS.forEach(d=>{
@@ -546,7 +546,7 @@ function renderForm(m){
         const rows=s.rows.filter(isOn); if(!rows.length) return;
         det.append(el('div',{class:'sec',text:s.title}));
         if(s.note) det.append(el('div',{class:'secnote',text:s.note}));
-        rows.forEach(r=>det.append(rowBlock(r,touch,()=>{ hidden.add(r.id); persistHidden(); drawTests(); setStatus('“'+r.name+'” tolto dalla batteria · lo riattivi da ⚙ Batteria'); })));
+        rows.forEach(r=>det.append(rowBlock(r,touch,()=>{ hidden.add(r.id); persistHidden(); drawTests(); setStatus('“'+r.name+'” tolto dalla scheda · lo riattivi da ⚙ Scegli i test'); })));
       });
       testsBox.append(det);
     });
