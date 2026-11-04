@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Scheda di valutazione funzionale</title>
+<style>
+:root{
+  --bg:#0b1d21; --panel:#12292e; --panel2:#17343a; --line:#24474e;
+  --teal:#2fb3a6; --teal2:#1f8a80; --text:#e8f3f2; --muted:#93b3b0;
+  --warn:#e5b94a; --bad:#e46a5e; --ok:#58c98b;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+header{position:sticky;top:0;z-index:20;background:rgba(11,29,33,.96);border-bottom:1px solid var(--line);padding:10px 14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+header h1{font-size:17px;margin:0;flex:1 1 200px;color:var(--teal)}
+nav{display:flex;gap:6px}
+button{font:inherit;color:var(--text);background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:9px 14px;cursor:pointer;min-height:42px}
+button:hover{border-color:var(--teal)}
+button.primary{background:var(--teal2);border-color:var(--teal);font-weight:600}
+button.danger{border-color:var(--bad);color:var(--bad)}
+button.active{background:var(--teal2);border-color:var(--teal)}
+button:disabled{opacity:.5;cursor:wait}
+main{max-width:920px;margin:0 auto;padding:14px 14px 130px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:14px}
+.card h2{margin:0 0 10px;font-size:16px;color:var(--teal)}
+label{display:block;font-size:13px;color:var(--muted);margin:0 0 4px}
+input,select,textarea{width:100%;font:inherit;color:var(--text);background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:10px;min-height:44px}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--teal);border-color:var(--teal)}
+textarea{min-height:70px;resize:vertical}
+.grid{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border-radius:999px;padding:8px 14px;min-height:40px}
+.banner{background:#3a2f12;border:1px solid var(--warn);color:#f3dc9b;border-radius:10px;padding:10px 12px;margin-bottom:14px;font-size:14px}
+.info{background:var(--panel2);border:1px solid var(--line);color:var(--muted);border-radius:10px;padding:10px 12px;margin-bottom:14px;font-size:13px}
+details.dist{background:var(--panel);border:1px solid var(--line);border-radius:14px;margin-bottom:14px}
+details.dist>summary{cursor:pointer;padding:14px;font-weight:600;list-style:none;display:flex;justify-content:space-between;align-items:center;color:var(--teal);font-size:17px}
+details.dist>summary::-webkit-details-marker{display:none}
+.prog{font-size:13px;color:var(--muted);font-weight:400}
+.sec{background:var(--panel2);padding:8px 14px;font-weight:600;font-size:14px;border-top:1px solid var(--line)}
+.secnote{font-size:12.5px;color:var(--muted);padding:8px 14px 0;font-style:italic}
+.test{border-top:1px solid var(--line);padding:12px 14px}
+.test h3{margin:0;font-size:15px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.exp{font-size:12.5px;color:var(--teal);font-weight:600}
+.test details.setup{margin:4px 0 8px}
+.test details.setup summary{font-size:12.5px;color:var(--muted);cursor:pointer}
+.test details.setup p{font-size:13px;color:var(--muted);margin:4px 0 0}
+.sides{display:grid;gap:8px;grid-template-columns:1fr 1fr}
+.sides.one{grid-template-columns:1fr}
+.chk{display:flex;align-items:center;gap:10px;background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:0 12px;min-height:44px;cursor:pointer;margin:0;color:var(--text);font-size:15px}
+.chk input{width:22px;height:22px;min-height:0;accent-color:var(--teal)}
+.flags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.flag{font-size:13px;padding:3px 10px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
+.flag.ok{color:var(--ok);border-color:var(--ok)}
+.flag.warn{color:var(--warn);border-color:var(--warn)}
+.flag.bad{color:var(--bad);border-color:var(--bad)}
+.flag.der{color:var(--text);border-color:var(--teal)}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.segb{min-height:44px;padding:6px}
+.segb.on-a{background:#1e4d3a;border-color:var(--ok)}
+.segb.on-p{background:#4d2a26;border-color:var(--bad)}
+.tog{margin:6px 14px}
+.prevhint{margin-top:6px;color:#b9d7d3}
+.hidebtn{min-height:30px;padding:2px 10px;font-size:12px;color:var(--muted)}
+.affrow{padding:4px 14px 12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.affrow label{margin:0}
+.affrow select{width:auto;min-width:200px}
+td.st-warn{background:rgba(229,185,74,.18)}
+td.st-bad{background:rgba(228,106,94,.22)}
+.note{margin-top:8px}
+.note input{min-height:38px;font-size:14px}
+.row{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.list-item{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:12px 0;border-top:1px solid var(--line);flex-wrap:wrap}
+.list-item:first-child{border-top:0}
+.meta{font-size:13px;color:var(--muted)}
+.savebar{position:fixed;left:0;right:0;bottom:0;background:rgba(11,29,33,.97);border-top:1px solid var(--line);padding:10px 14px;display:flex;gap:8px;align-items:center;justify-content:center;z-index:25;flex-wrap:wrap}
+.status{font-size:13px;color:var(--muted);flex:1 1 100%;text-align:center}
+#sw{position:fixed;right:12px;bottom:112px;z-index:30}
+#swbtn{border-radius:999px;background:var(--teal2);border-color:var(--teal);font-weight:600}
+#swpanel{display:none;background:var(--panel);border:1px solid var(--teal);border-radius:14px;padding:12px;margin-bottom:8px;width:230px}
+#swtime{font-size:36px;font-variant-numeric:tabular-nums;text-align:center;margin-bottom:8px}
+#swpanel .btns{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--muted);font-weight:500}
+h4{margin:14px 0 6px;color:var(--teal)}
+dialog{background:var(--panel);color:var(--text);border:1px solid var(--teal);border-radius:14px;max-width:760px;width:94%;max-height:88vh;overflow:auto}
+dialog::backdrop{background:rgba(0,0,0,.6)}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+<header>
+  <h1>Scheda di valutazione funzionale</h1>
+  <nav>
+    <button id="navList" class="active">Home</button>
+    <button id="navNew" class="primary">+ Nuova</button>
+    <button id="navSet">⚙ Batteria</button>
+  </nav>
+</header>
+<main id="main"></main>
+
+<div id="sw">
+  <div id="swpanel">
+    <div id="swtime">0:00.0</div>
+    <div class="btns">
+      <button id="swgo" class="primary">Avvia</button>
+      <button id="swreset">Azzera</button>
+      <button id="swfill" style="grid-column:span 2">Inserisci nel campo selezionato</button>
+    </div>
+    <div class="meta" style="margin-top:6px">Tocca prima il campo in secondi da compilare.</div>
+  </div>
+  <button id="swbtn">⏱ Cronometro</button>
+</div>
+
+<dialog id="dlg"><div id="dlgbody"></div><div class="row" style="margin-top:12px"><span></span><button id="dlgclose">Chiudi</button></div></dialog>
+
+<script>
+"use strict";
+/* =====================================================================
+   BATTERIA TEST (da “Batteria test standardizzati”)
+   Per modificare un test basta cambiare questo blocco.
+   ===================================================================== */
+const n = x => { const f = parseFloat(x); return isNaN(f) ? null : f; };
+const sgn = d => (d >= 0 ? '+' : '−') + Math.abs(d);
+
+function rom(id,name,setup,exp,o){ return Object.assign({id,name,setup,exp,kind:'num',bi:true,unit:'°',cat:'rom',ref:'Atteso '+exp+'°'},o||{}); }
+function frc(id,name,setup,o){ return Object.assign({id,name,setup,kind:'num',bi:true,unit:'kg',cat:'force',ref:'LSI ≥ 90%'},o||{}); }
+function sel(id,name,setup,opts,o){ return Object.assign({id,name,setup,kind:'sel',bi:true,opts,cat:'func'},o||{}); }
+function chk(id,name,o){ return Object.assign({id,name,kind:'chk',bi:true,cat:'func',ref:'Assente'},o||{}); }
+const norm = x => (x==='1'||x==='P') ? 'P' : ((x==='0'||x==='A') ? 'A' : '');
+function numf(id,name,setup,unit,o){ return Object.assign({id,name,setup,kind:'num',bi:false,unit,cat:'func'},o||{}); }
+function numb(id,name,setup,unit,o){ return Object.assign({id,name,setup,kind:'num',bi:true,unit,cat:'func'},o||{}); }
+
+const VERT = ['—','C7','T1','T2','T3','T4','T5','T6','T7','T8','T9','T10','T11','T12','L1','L2','L3','L4','Sotto L4'];
+
+const CS30 = {
+  M:[[60,64,14,19],[65,74,12,18],[75,79,11,17],[80,84,10,15],[85,200,7,14]],
+  F:[[60,64,12,17],[65,69,11,16],[70,79,10,15],[80,84,9,14],[85,200,4,13]]
+};
+
+const DISTRICTS = [
+ {id:'ginocchio', name:'1 · Ginocchio', sections:[
+  {title:'A — Range di movimento (ROM)', note:'Per l’estensione scrivi i gradi misurati: −10 = il ginocchio resta flesso di 10°.', rows:[
+    rom('g_flex','Flessione ginocchio','Supino o prono. Device sulla faccia laterale della tibia, a metà fra ginocchio e caviglia. Azzerare a ginocchio esteso.',135),
+    rom('g_ext','Estensione ginocchio','Stessa posizione e stesso punto. Si parte da ginocchio flesso e si misura quanto manca per tornare a 0°.',0,{neg:true,ext:true})
+  ]},
+  {title:'B — Forza isometrica (make test)', note:'3 prove per lato, si registra il massimo. Se entrambi gli arti sono deboli l’LSI può risultare accettabile: leggi sempre anche i kg assoluti.', rows:[
+    frc('g_qf','Estensione (quadricipite)','Seduto, ginocchio flesso 90°, cuscinetto su tibia distale anteriore, cintura di ancoraggio.'),
+    frc('g_ham','Flessione (ischiocrurali)','Seduto, ginocchio flesso 90°, cuscinetto su tibia distale posteriore.')
+  ]},
+  {title:'C — Test funzionale: single-leg squat', note:'Fino a 5 squat monopodalici a corpo libero per lato (discesa ~60° in 2–3 s). Osserva il controllo dinamico sul piano frontale. Riferimento: nessun item presente (score 0) con 5 ripetizioni corrette.', rows:[
+    chk('sl_val','Valgismo dinamico del ginocchio'),
+    chk('sl_pel','Caduta bacino controlaterale (Trendelenburg)'),
+    chk('sl_tr','Tronco inclinato / perdita equilibrio'),
+    {id:'sl_score',kind:'derived',name:'Score (item presenti, 0–3)',cat:'func',ref:'0',fn:(V)=>({dx:cnt(V,['sl_val','sl_pel','sl_tr'],'dx'),sx:cnt(V,['sl_val','sl_pel','sl_tr'],'sx')})},
+    numb('sl_n','N. squat completati correttamente (max 5)','', 'n',{ref:'5',max:5})
+  ]}
+ ]},
+ {id:'spalla', name:'2 · Spalla', sections:[
+  {title:'A — Range di movimento (ROM)', rows:[
+    rom('s_flex','Flessione','In piedi o seduto, di profilo. Device sulla faccia laterale del braccio, appena sopra il gomito. Azzerare a braccio lungo il fianco.',180),
+    rom('s_abd','Abduzione','In piedi o seduto, di fronte. Stesso punto di applicazione. Azzerare a braccio lungo il fianco.',180),
+    rom('s_er','Rotazione esterna','Supino, braccio abdotto a 90° sul lettino, gomito flesso 90°, avambraccio verticale. Device sul dorso dell’avambraccio distale. Azzerare con avambraccio verticale.',90),
+    rom('s_ir','Rotazione interna','Stessa posizione e stesso punto, movimento in direzione opposta.',70)
+  ]},
+  {title:'B — Forza isometrica (make test)', note:'Extra/intrarotatori testati a braccio addotto per evitare zone di impingement.', rows:[
+    frc('s_fabd','Abduzione (deltoide)','In piedi, braccio addotto lungo il fianco, cuscinetto laterale prossimale al gomito.'),
+    frc('s_fer','Extrarotatori','Gomito flesso 90°, braccio addotto, cuscinetto sul dorso del polso.'),
+    frc('s_fir','Intrarotatori','Stessa posizione, cuscinetto all’interno del polso.')
+  ]},
+  {title:'C — Test funzionale: Apley scratch test', note:'Livello vertebrale raggiunto dal terzo dito. Atteso: dietro la nuca ~T3–T7, dietro la schiena ~T7–T12. Il dato più rilevante è la simmetria Dx/Sx (differenza di più di un paio di livelli = restrizione da approfondire).', rows:[
+    sel('s_apn','Dietro la nuca (extrarot./abd.)','',VERT,{ref:'~T3–T7',vert:true}),
+    sel('s_aps','Dietro la schiena (intrarot./add.)','',VERT,{ref:'~T7–T12',vert:true})
+  ]}
+ ]},
+ {id:'anca', name:'3 · Anca', sections:[
+  {title:'A — Range di movimento (ROM)', rows:[
+    rom('a_flex','Flessione','Supino. Device sulla faccia laterale della coscia, a metà fra anca e ginocchio. Azzerare con arto disteso sul lettino.',120),
+    rom('a_abd','Abduzione','Supino, di fronte all’operatore. Device sulla faccia anteriore della coscia distale. Azzerare con arti paralleli.',45),
+    rom('a_ir','Rotazione interna','Seduto a bordo lettino, ginocchio flesso 90°, tibia verticale. Device sulla faccia anteriore della tibia distale. Azzerare con tibia verticale.',45),
+    rom('a_er','Rotazione esterna','Stessa posizione e stesso punto, movimento in direzione opposta.',45)
+  ]},
+  {title:'B — Forza isometrica (make test)', note:'Gli abduttori (gluteo medio) sono il parametro più rilevante per il rischio caduta over-65.', rows:[
+    frc('a_fabd','Abduttori (gluteo medio)','Decubito laterale, anca neutra, cuscinetto laterale prossimale al ginocchio.'),
+    frc('a_ffl','Flessori (ileopsoas)','Seduto, anca flessa 90°, cuscinetto anteriore coscia distale.'),
+    frc('a_fex','Estensori (grande gluteo)','Prono, cuscinetto posteriore coscia prossimale al ginocchio.'),
+    frc('a_lp','Pressa orizzontale (catena estensoria)','Seduto alla leg press, anca e ginocchio a 90°, cuscinetto sotto la pianta del piede sulla pedana. Il valore assoluto non è confrontabile con i test isolati: si legge come Dx/Sx e andamento nel tempo.')
+  ]},
+  {title:'C — Test funzionale: single-leg stance + passo', note:'Osservazione qualitativa del passo (antalgico, Trendelenburg, ridotta fase di appoggio). Sostituisce il test provocativo FABER, non pertinente allo scope of practice.', rows:[
+    numb('a_sls','Single-leg stance (tempo, max 30 s)','Occhi aperti, mani sui fianchi; si ferma a 30 s o se tocca/appoggia.','s',{ref:'60-69 a: ~27 s · 70-79: ~17 s · 80+: ~9 s · <5 s = rischio caduta',max:30,sls:true}),
+    sel('a_tren','Segno di Trendelenburg','Osservare il bacino durante l’appoggio.',['—','Negativo (bacino stabile)','Positivo'],{ref:'Negativo'})
+  ]}
+ ]},
+ {id:'caviglia', name:'4 · Caviglia-Piede', sections:[
+  {title:'A — Range di movimento (ROM)', rows:[
+    rom('c_df','Flessione dorsale','Seduto, ginocchio flesso 90°, piede libero. Device sulla pianta del piede (o sul dorso). Azzerare a piede neutro, 90° sulla tibia. Sotto 15° = limitazione rilevante.',20,{minWarn:15}),
+    rom('c_pf','Flessione plantare','Stessa posizione e stesso punto, movimento in direzione opposta.',50)
+  ]},
+  {title:'B — Forza isometrica (make test)', rows:[
+    frc('c_fpf','Flessori plantari','Seduto, ginocchio flesso 90°, cuscinetto plantare sull’avampiede.'),
+    frc('c_fdf','Flessori dorsali','Seduto, ginocchio esteso, cuscinetto dorso del piede.'),
+    frc('c_fev','Eversori (peronei)','Seduto, piede neutro, cuscinetto bordo laterale del piede.')
+  ]},
+  {title:'C — Test funzionali: Y-balance + heel raise', note:'Composite = (somma delle 3 direzioni ÷ (3 × lunghezza arto)) × 100; lunghezza arto dalla SIAS al malleolo mediale. Soglie derivate da atleti: nei non atleti e over-65 usare il test come confronto Dx/Sx e pre/post sullo stesso individuo. Nei molto anziani è più informativo il single-leg stance (anca).', rows:[
+    numb('y_len','Lunghezza arto (SIAS → malleolo mediale)','Serve per il composite score.','cm',{ref:'—'}),
+    numb('y_ant','Y-balance · anteriore','Appoggio monopodalico al centro della stella; 4-6 prove di familiarizzazione, poi 3 prove valide per direzione: si registra la massima.','cm',{ref:'Diff. Dx/Sx < 4 cm',ydiff:4}),
+    numb('y_pm','Y-balance · postero-mediale','','cm',{ref:'Diff. Dx/Sx < 6 cm',ydiff:6}),
+    numb('y_pl','Y-balance · postero-laterale','','cm',{ref:'Diff. Dx/Sx < 6 cm',ydiff:6}),
+    {id:'y_comp',kind:'derived',name:'Composite score (% lunghezza arto)',cat:'func',ref:'Atleti: ≥ 94%',fn:(V)=>({dx:comp(V,'dx'),sx:comp(V,'sx')}),comp:true},
+    numb('c_hr','Heel raise test (n. ripetizioni)','Appoggio monopodalico, avampiede sul cuneo inclinato di 10°, un’alzata ogni 2 s (metronomo), fino a interruzione.','rip',{ref:'Mediana adulti: ♂ 24 · ♀ 21 · giovani ~29 · over 60 ~12'})
+  ]}
+ ]},
+ {id:'cervicale', name:'5 · Cervicale', sections:[
+  {title:'A — Range di movimento (ROM)', note:'Dopo i 60 anni una riduzione del 20-30% rispetto ai valori AAOS è comune e non necessariamente patologica. Valuta soprattutto la simmetria tra i lati e la variazione nel tempo dello stesso soggetto.', rows:[
+    rom('k_flex','Flessione','Seduto, schiena appoggiata, sguardo all’orizzonte. Device sulla sommità del capo, orientato avanti-indietro. Azzerare in posizione neutra. Mento verso lo sterno.',45,{bi:false}),
+    rom('k_ext','Estensione','Stessa posizione e stesso punto, movimento in direzione opposta.',45,{bi:false}),
+    rom('k_lat','Flessione laterale','Seduto. Device sulla sommità del capo, ruotato di 90° (orientamento destra-sinistra). Azzerare in neutro. Orecchio verso la spalla, un lato per volta.',45),
+    rom('k_rot','Rotazione','SUPINO, capo appoggiato al lettino. Device al centro della fronte. Azzerare a viso rivolto al soffitto. Mento verso la spalla, un lato per volta.',60)
+  ]}
+ ]},
+ {id:'rachide', name:'6 · Rachide dorso-lombare / Core', sections:[
+  {title:'A — Mobilità lombare: Schober', note:'Il ROM del tronco in gradi non è incluso (servirebbero due inclinometri). Lo Schober misura la mobilità lombare in modo diretto. Segni sempre gli stessi reperi per poter confrontare i retest.', rows:[
+    numf('sch','Schober · distanza in flessione massima','Due segni sulla cute: uno 10 cm sopra e uno 5 cm sotto la giunzione L5-S1 (distanza iniziale 15 cm). Flessione massima del tronco, ginocchia estese: rimisura la distanza tra i due segni.','cm',{ref:'Atteso ≥ 20 cm (+5 cm)',min:0}),
+    {id:'sch_inc',kind:'derived',name:'Schober · incremento rispetto a 15 cm',cat:'func',ref:'+5 cm',fn:(V)=>{const x=n((V.sch||{}).val);return {val:x==null?'':sgn(x-15)+' cm'};},schober:true}
+  ]},
+  {title:'B — Simmetria posturale: triangolo della taglia', note:'Valutazione solo qualitativa (soggetto in piedi, arti rilassati): non si misura in cm. Un’asimmetria evidente è un rilievo di screening da segnalare e, se marcato o di nuova comparsa, da rimandare al medico.', rows:[
+    sel('tri','Simmetria dei due triangoli (spazio braccio-fianco)','',['—','Simmetrici','Asimmetrici · Dx più ampio','Asimmetrici · Sx più ampio'],{bi:false,ref:'Simmetrici'})
+  ]},
+  {title:'C — Plank test (con app dedicata)', note:'Riferimenti di uso comune, non normative AAOS: da personalizzare per età, peso, livello. Il confronto pre/post sullo stesso soggetto è il dato più affidabile.', rows:[
+    numf('pl_t','Tempo di tenuta con allineamento corretto','','s',{ref:'Adulti sani: ♂ ≥ 60 s · ♀ ≥ 45 s · over-65 ≥ 30 s',plank:true}),
+    numf('pl_c','Feedback app: n. correzioni segnalate','','n',{ref:'Il minor numero possibile'})
+  ]}
+ ]},
+ {id:'gomito', name:'7 · Gomito-Polso-Mano', sections:[
+  {title:'A — Range di movimento (ROM)', rows:[
+    rom('e_flex','Flessione gomito','Seduto, braccio appoggiato sul lettino. Device sulla faccia dorsale dell’avambraccio distale. Azzerare a gomito completamente esteso.',150),
+    rom('e_ext','Estensione gomito','Stessa posizione e stesso punto: si misura quanto manca per tornare a 0°. Iperestensione 5-15° = variante normale, spec. nelle donne.',0,{neg:true,ext:true}),
+    rom('e_pro','Pronazione','Seduto, gomito flesso 90° aderente al fianco, avambraccio orizzontale. Device sul dorso della mano. Azzerare con pollice rivolto verso l’alto. Palmo verso il basso.',80),
+    rom('e_sup','Supinazione','Stessa posizione e stesso punto, palmo verso l’alto.',80),
+    rom('w_flex','Flessione polso','Avambraccio appoggiato, mano fuori dal bordo. Device sul dorso della mano (III metacarpo). Azzerare a mano in linea con l’avambraccio.',80),
+    rom('w_ext','Estensione polso','Stessa posizione e stesso punto, movimento in direzione opposta.',70)
+  ]},
+  {title:'B — Forza isometrica (make test)', rows:[
+    frc('e_ffl','Flessori gomito (bicipite)','Seduto, gomito 90°, cuscinetto volare avambraccio distale.'),
+    frc('e_fex','Estensori gomito (tricipite)','Seduto, gomito 90°, cuscinetto dorsale avambraccio distale.')
+  ]}
+ ]},
+ {id:'globale', name:'8 · Batteria funzionale globale', sections:[
+  {title:'Equilibrio', note:'I cut-off derivano da studi su popolazione anziana comunitaria: sono soglie di screening, non diagnosi.', rows:[
+    numf('berg','Berg Balance Scale (punteggio /56)','14 compiti di equilibrio statico e dinamico (0–4 ciascuno). Servono sedia con e senza braccioli, sgabello, righello, cronometro; 15-20 min.','/56',{ref:'41-56 autonomo · 21-40 con assistenza · <45 rischio caduta aumentato',max:56,berg:true}),
+    numf('tug','Timed Up and Go — TUG','3 m a passo normale e sicuro; una prova di familiarizzazione. Il cronometro parte al comando e si ferma quando il soggetto è seduto con la schiena appoggiata.','s',{ref:'<10 s normale · ≥12 s rischio aumentato · >30 s mobilità gravemente compromessa',tug:true})
+  ]},
+  {title:'Transfer e forza arti inferiori', rows:[
+    numf('cs30','30-Second Chair Stand (n. ripetizioni)','Sedia senza braccioli, seduta 43 cm, appoggiata al muro. Braccia incrociate al petto; ripetizioni complete in 30 s. Se allo scadere si è oltre metà salita, l’alzata conta. Variazione ≥ 2 rip. = clinicamente significativa.','rip',{ref:'Fascia “nella media” per sesso/età (Jones & Rikli, 2002)',cs30:true})
+  ]},
+  {title:'Mobilità / flessibilità', rows:[
+    numf('csr','Chair Sit-and-Reach (cm, + o −)','Sul bordo di una sedia (~44 cm) appoggiata al muro, un piede a terra e l’altro arto esteso, tallone a terra. Misura la distanza dito medio–punta della scarpa: negativo se non la raggiunge, positivo se la supera. 2 prove sull’arto preferito, si registra la migliore.','cm',{neg:true,ref:'Mediana 60-64 a: ♂ +1,5 · ♀ +5 cm'})
+  ]}
+ ]}
+];
+
+const ALL = {};
+DISTRICTS.forEach(d=>d.sections.forEach(s=>s.rows.forEach(r=>{ ALL[r.id]=Object.assign({district:d.name,dist:d.id,section:s.title},r); })));
+
+function cnt(V, ids, side){ let c=0, any=false; ids.forEach(i=>{ const v=norm((V[i]||{})[side]); if(v) any=true; if(v==='P') c++; }); return any? String(c):''; }
+function comp(V, side){
+  const len=n((V.y_len||{})[side]); if(!len) return '';
+  const a=n((V.y_ant||{})[side]), b=n((V.y_pm||{})[side]), c=n((V.y_pl||{})[side]);
+  if(a==null||b==null||c==null) return '';
+  return ((a+b+c)/(3*len)*100).toFixed(1)+'%';
+}
+
+/* ---------- interpretazione automatica ---------- */
+function lsiFlag(v, aff){
+  const a=n(v.dx), b=n(v.sx); if(a==null||b==null) return null;
+  let pct, txt;
+  if(aff==='dx' && b>0){ pct=a/b*100; txt='LSI '+pct.toFixed(0)+'% (Dx / Sx riferimento)'; }
+  else if(aff==='sx' && a>0){ pct=b/a*100; txt='LSI '+pct.toFixed(0)+'% (Sx / Dx riferimento)'; }
+  else { const hi=Math.max(a,b), lo=Math.min(a,b); if(hi<=0) return null; pct=lo/hi*100; txt='LSI '+pct.toFixed(0)+'% (lato più debole: '+(a===b?'—':(a<b?'Dx':'Sx'))+')'; }
+  return {cls: pct>=90?'ok':'warn', txt: txt+(pct>=90?' · nella norma':' · sotto soglia 90%')};
+}
+function romFlag(r, v){
+  const parts=[]; let warn=false;
+  ['dx','sx'].forEach(s=>{
+    const x=n(v[s]); if(x==null) return;
+    const lab=r.bi?(s==='dx'?'Dx ':'Sx '):'';
+    if(r.ext){ parts.push(lab+(x<0?'deficit '+(-x)+'°':(x>0?'iperestensione '+x+'°':'estensione completa'))); }
+    else parts.push(lab+(x===r.exp?'come atteso':sgn(x-r.exp)+'° vs atteso'));
+    if(r.minWarn!=null && x<r.minWarn) warn=true;
+  });
+  if(!parts.length) return null;
+  return {cls: warn?'warn':'', txt: parts.join(' · ')+(warn?' · sotto '+r.minWarn+'°: limitazione rilevante':'')};
+}
+function csRange(sex, age){ if(!sex||age==null) return null; const t=CS30[sex]; return t.find(x=>age>=x[0]&&age<=x[1])||null; }
+function analyze(r, V, ctx){
+  const v = V[r.id]||{};
+  const out={flags:[], der:null};
+  if(r.kind==='derived'){
+    const d=r.fn(V, ctx); out.der=d;
+    if(r.comp){
+      ['dx','sx'].forEach(s=>{ const p=parseFloat(d[s]); if(!isNaN(p)) out.flags.push({cls:p>=94?'ok':'', txt:(s==='dx'?'Dx ':'Sx ')+(p>=94?'≥ 94% (soglia atleti)':'< 94%: soglia valida solo per atleti')}); });
+    }
+    return out;
+  }
+  if(r.cat==='rom'){ const f=romFlag(r,v); if(f) out.flags.push(f); }
+  if(r.cat==='force'){ const f=lsiFlag(v,affOf(ctx,r.id)); if(f) out.flags.push(f); }
+  if(r.id==='sl_n'){ ['dx','sx'].forEach(s=>{ const x=n(v[s]); if(x!=null&&x<5) out.flags.push({cls:'warn',txt:(s==='dx'?'Dx ':'Sx ')+x+'/5 corretti'}); }); }
+  if(r.ydiff){ const a=n(v.dx), b=n(v.sx); if(a!=null&&b!=null){ const d=Math.abs(a-b); out.flags.push({cls:d>=r.ydiff?'warn':'ok', txt:'Differenza Dx/Sx '+d.toFixed(1)+' cm'+(d>=r.ydiff?' (≥ '+r.ydiff+' cm)':'')}); } }
+  if(r.vert && v.dx && v.sx){ const i=VERT.indexOf(v.dx), j=VERT.indexOf(v.sx); if(i>0&&j>0){ const d=Math.abs(i-j); out.flags.push({cls:d>2?'warn':'ok', txt:'Differenza Dx/Sx: '+d+(d===1?' livello':' livelli')}); } }
+  if(r.sls){
+    ['dx','sx'].forEach(s=>{
+      const x=n(v[s]); if(x==null) return; const lab=s==='dx'?'Dx ':'Sx ';
+      if(x<5) out.flags.push({cls:'bad',txt:lab+'< 5 s: rischio caduta traumatica'});
+      else if(ctx.age!=null){ const ref=ctx.age>=80?9:ctx.age>=70?17:ctx.age>=60?27:null; if(ref!=null) out.flags.push({cls:x>=ref?'ok':'warn',txt:lab+(x>=ref?'in linea con':'sotto')+' il riferimento per fascia (~'+ref+' s)'}); }
+    });
+  }
+  if(r.tug){
+    const x=n(v.val);
+    if(x!=null) out.flags.push(x<10?{cls:'ok',txt:'Normale (< 10 s)'}:x<12?{cls:'warn',txt:'Zona intermedia (10-12 s)'}:x<=30?{cls:'warn',txt:'Rischio caduta aumentato (≥ 12 s)'}:{cls:'bad',txt:'Mobilità gravemente compromessa (> 30 s)'});
+  }
+  if(r.berg){
+    const x=n(v.val);
+    if(x!=null) out.flags.push(x>=45?{cls:'ok',txt:'Autonomo (≥ 45)'}:x>=41?{cls:'warn',txt:'Autonomo ma < 45: rischio caduta aumentato'}:x>=21?{cls:'bad',txt:'Necessita assistenza (21-40)'}:{cls:'bad',txt:'Sotto 21: fuori dalle fasce di riferimento'});
+  }
+  if(r.cs30){
+    const x=n(v.val);
+    if(x!=null){
+      if(ctx.age==null||!ctx.sex) out.flags.push({cls:'',txt:'Inserisci sesso ed età per il confronto'});
+      else if(ctx.age<60) out.flags.push({cls:'',txt:'Giovani adulti (18-35): media ~33 rip.'});
+      else { const rg=csRange(ctx.sex,ctx.age); if(rg) out.flags.push({cls:x>=rg[2]?'ok':'warn',txt:'Fascia '+rg[2]+'-'+rg[3]+' rip.'+(x<rg[2]?' · sotto la media: rischio caduta aumentato':'')}); }
+    }
+  }
+  if(r.plank){
+    const x=n(v.val);
+    if(x!=null && ctx.age!=null){
+      const th = ctx.age>=65?30:(ctx.sex==='M'?60:(ctx.sex==='F'?45:null));
+      if(th!=null) out.flags.push({cls:x>=th?'ok':'warn',txt:(x>=th?'≥ ':'< ')+th+' s'+(ctx.age>=65?' (over-65)':'')});
+    }
+  }
+  return out;
+}
+function affOf(ctx,id){ const d=ALL[id]&&ALL[id].dist; const x=ctx.affD&&d?ctx.affD[d]:undefined; return x!=null?x:(ctx.aff||''); }
+const HAS_FORCE = d => d.sections.some(s=>s.rows.some(r=>r.cat==='force'));
+const worst = fl => fl.some(f=>f.cls==='bad')?'bad':(fl.some(f=>f.cls==='warn')?'warn':'');
+function hasVal(id,V){ const v=V[id]; return !!v && (v.val||v.dx||v.sx); }
+
+/* ---------- modello per riepilogo / esportazioni ---------- */
+function ctxOf(ev){ return {sex:ev.sex||'', age:n(ev.age), aff:ev.aff||'', affD:ev.affD||{}}; }
+function fmtv(r,x){ if(x==null||x==='') return ''; if(r.kind==='chk') return {P:'Presente',A:'Assente'}[norm(x)]||''; return r.kind==='sel'?x:x+(r.unit==='°'?'°':(r.unit&&r.unit!=='n'&&r.unit!=='/56'?' '+r.unit:'')); }
+function prevText(r, PV, ctx){
+  if(!PV) return '';
+  if(r.kind==='derived'){ const d=r.fn(PV,ctx)||{}; if(d.dx!=null||d.sx!=null) return [d.dx?'Dx '+d.dx:'',d.sx?'Sx '+d.sx:''].filter(Boolean).join(' · '); return d.val||''; }
+  const v=PV[r.id]||{};
+  if(r.bi) return [v.dx?'Dx '+fmtv(r,v.dx):'', v.sx?'Sx '+fmtv(r,v.sx):''].filter(Boolean).join(' · ');
+  return fmtv(r,v.val);
+}
+function buildModel(ev){
+  const V=ev.values||{}, ctx=ctxOf(ev), notes=ev.notes||{};
+  const PV=ev.prev?(ev.prev.values||{}):null, hasPrev=!!PV, prevDate=ev.prev?fmtDate(ev.prev.date):'';
+  const head=hasPrev?['Test','Dx / Valore','Sx','Precedente ('+prevDate+')','Atteso / Riferimento','Esito / note']:['Test','Dx / Valore','Sx','Atteso / Riferimento','Esito / note'];
+  const P3=r=>hasPrev?[prevText(r,PV,ctx)]:[];
+  const sexLab={M:'Maschio',F:'Femmina'}[ev.sex]||'—', AFF={dx:'Destro',sx:'Sinistro'};
+  const meta=[['Codice cliente',ev.code||'—'],['Data',fmtDate(ev.date)],['Professionista',ev.professional||'—'],['Sesso',sexLab],['Età',ev.age||'—'],['Dolore NRS (0-10)',ev.nrs===''||ev.nrs==null?'—':ev.nrs]];
+  const districts=[];
+  DISTRICTS.filter(d=>(ev.districts||[]).includes(d.id)).forEach(d=>{
+    const sections=[];
+    d.sections.forEach(s=>{
+      const rows=[], status=[];
+      s.rows.forEach(r=>{
+        const v=V[r.id]||{};
+        if(r.kind==='derived'){
+          const a=analyze(r,V,ctx); const dd=a.der||{};
+          if(!(dd.dx||dd.sx||dd.val)) return;
+          rows.push([r.name, r.bi!==false&&(dd.dx!=null||dd.sx!=null)?(dd.dx||''):(dd.val||''), dd.sx||'', ...P3(r), r.ref||'', a.flags.map(f=>f.txt).join(' · ')]);
+          if(r.id==='sl_score'){ const t=[]; if(+dd.dx>0) t.push('Dx '+dd.dx+' item'); if(+dd.sx>0) t.push('Sx '+dd.sx+' item'); rows[rows.length-1][head.length-1]=t.length?'Controllo non ottimale: '+t.join(' · '):'Controllo ottimale'; }
+          status.push(r.id==='sl_score' ? ((+dd.dx>0||+dd.sx>0)?'warn':'') : worst(a.flags));
+          return;
+        }
+        if(!(v.val||v.dx||v.sx)) return;
+        const a=analyze(r,V,ctx);
+        const fmt=x=>fmtv(r,x);
+        const note=(notes[r.id]||'').trim();
+        if(r.kind==='chk'){ const ps=[norm(v.dx)==='P'?'Dx':'',norm(v.sx)==='P'?'Sx':''].filter(Boolean); if(ps.length) a.flags.push({cls:'warn',txt:'Presente a '+ps.join(' e ')}); }
+        const esito=[a.flags.map(f=>f.txt).join(' · '), note].filter(Boolean).join(' — ');
+        rows.push([r.name, r.bi?fmt(v.dx):fmt(v.val), r.bi?fmt(v.sx):'', ...P3(r), r.ref||'', esito]);
+        status.push(r.kind==='chk' ? ((norm(v.dx)==='P'||norm(v.sx)==='P')?'warn':'') : worst(a.flags));
+      });
+      if(rows.length) sections.push({title:s.title, rows, status});
+    });
+    const af=HAS_FORCE(d)?AFF[affOf(ctx,d.sections.find(s=>s.rows.some(r=>r.cat==='force')).rows.find(r=>r.cat==='force').id)]:'';
+    districts.push({name:d.name+(af?'  ·  arto interessato: '+af:''), sections});
+  });
+  return {title:'Scheda di valutazione funzionale', studio:ev.studio||'', note:'Riferimenti dalla “Batteria test standardizzati”: soglie di screening, non diagnosi. Celle in giallo = da attenzionare; in rosso = criticità.', meta, motivo:ev.motivo||'', districts, conclusioni:notes._conclusioni||'', hasPrev, prevDate, head, ec:head.length-1};
+}
+
+/* =====================================================================
+   STATO E UI
+   ===================================================================== */
+const COLL='valutazioni_v2', DRAFT_KEY='val_bozza_v2', STUDIO_KEY='val_studio';
+let db=null, dbNote='', list=[], cur=newEval(), dirty=false, view='list', lastField=null, rowUIs={}, progUIs={};
+const $=(s,r)=>(r||document).querySelector(s);
+function el(tag, props, ...kids){
+  const e=document.createElement(tag);
+  if(props) for(const k in props){
+    if(k==='class') e.className=props[k];
+    else if(k==='text') e.textContent=props[k];
+    else if(k.startsWith('on')) e.addEventListener(k.slice(2), props[k]);
+    else if(props[k]!==false && props[k]!=null) e.setAttribute(k, props[k]===true?'':props[k]);
+  }
+  kids.flat().forEach(k=>{ if(k==null) return; e.append(k.nodeType?k:document.createTextNode(k)); });
+  return e;
+}
+function today(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function fmtDate(s){ if(!s) return '—'; const [y,m,d]=s.split('-'); return d+'/'+m+'/'+y; }
+function lsGet(k){ try{return localStorage.getItem(k);}catch(e){return null;} }
+function lsSet(k,v){ try{localStorage.setItem(k,v);}catch(e){} }
+function newEval(){ return {id:'v'+Date.now().toString(36)+Math.random().toString(36).slice(2,5), code:'', date:today(), professional:'', studio:lsGet(STUDIO_KEY)||'', sex:'', age:'', aff:'', affD:{}, motivo:'', nrs:'', districts:[], values:{}, notes:{}, updated:0}; }
+
+function setView(v){ view=v; $('#navList').classList.toggle('active',v==='list'); $('#navNew').classList.toggle('active',v==='form'); $('#navSet').classList.toggle('active',v==='settings'); render(); }
+function render(){ const m=$('#main'); m.replaceChildren(); if(view==='list') renderHome(m); else if(view==='settings') renderSettings(m); else renderForm(m); }
+function startNew(){ cur=newEval(); dirty=false; try{localStorage.removeItem(DRAFT_KEY);}catch(e){} setView('form'); }
+function saveDraft(){ lsSet(DRAFT_KEY, JSON.stringify(cur)); }
+function setStatus(t){ const s=$('#status'); if(s) s.textContent=t; }
+
+function renderHome(m){
+  m.append(el('div',{class:'card'}, el('h2',{text:'Nuova valutazione'}), el('p',{class:'meta',text:'Compila la scheda e alla fine scarica il PDF: è il referto da conservare (per esempio su Drive) e contiene anche i dati per riaprirla.'}), el('button',{class:'primary',text:'+ Nuova scheda',onclick:startNew})));
+  const fi=el('input',{type:'file',accept:'application/pdf,.pdf,.json',style:'display:none'});
+  fi.addEventListener('change',()=>{ const f=fi.files&&fi.files[0]; fi.value=''; if(f) loadFile(f); });
+  const msg=el('p',{class:'meta',id:'loadmsg'});
+  m.append(el('div',{class:'card'}, el('h2',{text:'Riprendi una scheda'}), el('p',{class:'meta',text:'Carica il PDF di una scheda scaricata da questa pagina (anche da Drive): puoi modificarla oppure iniziare una rivalutazione con il confronto rispetto alla volta precedente.'}), fi, el('button',{text:'📂 Carica PDF della scheda',onclick:()=>fi.click()}), msg));
+  const s=lsGet(DRAFT_KEY); let dl=null; try{dl=s?JSON.parse(s):null;}catch(e){}
+  if(dl && (dl.code||Object.keys(dl.values||{}).length)) m.append(el('div',{class:'card'}, el('h2',{text:'Scheda in corso su questo dispositivo'}), el('p',{class:'meta',text:(dl.code||'senza codice')+' · '+fmtDate(dl.date)+(dl.prev?' · rivalutazione':'')}), el('div',{class:'chips'}, el('button',{class:'primary',text:'Riprendi',onclick:()=>{cur=Object.assign(newEval(),dl);dirty=true;setView('form');}}), el('button',{text:'Scarta',onclick:()=>{try{localStorage.removeItem(DRAFT_KEY);}catch(e){}render();}}))));
+  m.append(el('div',{class:'info',text:'Privacy: questa pagina non invia dati online. Restano solo sul dispositivo (bozza) e nei file che scarichi. Usa comunque un codice cliente invece di nome e cognome.'}));
+}
+
+/* ---------- caricamento PDF / JSON ---------- */
+function b64enc(str){ const u=new TextEncoder().encode(str); let s=''; for(let i=0;i<u.length;i+=0x8000) s+=String.fromCharCode.apply(null,u.subarray(i,i+0x8000)); return btoa(s); }
+function b64dec(b){ const s=atob(b); const u=new Uint8Array(s.length); for(let i=0;i<s.length;i++) u[i]=s.charCodeAt(i); return new TextDecoder().decode(u); }
+async function loadFile(f){
+  const msg=$('#loadmsg'); if(msg) msg.textContent='Lettura…';
+  try{
+    let data;
+    if(/\.json$/i.test(f.name)) data=JSON.parse(await f.text());
+    else {
+      const u=new Uint8Array(await f.arrayBuffer()); let t='';
+      for(let i=0;i<u.length;i+=0x8000) t+=String.fromCharCode.apply(null,u.subarray(i,i+0x8000));
+      const mm=t.match(/VALDATA1:([A-Za-z0-9+\/=]+):ENDVAL/);
+      if(!mm) throw new Error('Questo PDF non contiene i dati della scheda: va usato il PDF scaricato da questa pagina, non una copia stampata o modificata.');
+      data=JSON.parse(b64dec(mm[1]));
+    }
+    if(!data||typeof data!=='object'||!data.values) throw new Error('File non riconosciuto.');
+    if(msg) msg.textContent='';
+    chooseLoad(data);
+  }catch(e){ if(msg) msg.textContent='⚠ '+(e&&e.message||'Errore di lettura'); }
+}
+function chooseLoad(data){
+  const body=$('#dlgbody'); body.replaceChildren(
+    el('h2',{text:'Scheda '+(data.code||'senza codice'),style:'margin-top:0;color:var(--teal)'}),
+    el('p',{class:'meta',text:'Valutazione del '+fmtDate(data.date)+(data.professional?' · '+data.professional:'')}),
+    el('div',{style:'display:grid;gap:10px'},
+      el('button',{class:'primary',text:'✏️ Modifica questa scheda',onclick:()=>{ cur=Object.assign(newEval(),data); delete cur.format; dirty=false; saveDraft(); $('#dlg').close(); setView('form'); }}),
+      el('div',{class:'meta',text:'Riapri la stessa valutazione per correggerla o completarla.'}),
+      el('button',{text:'🔁 Nuova rivalutazione (con confronto)',onclick:()=>{ const e=newEval(); ['code','professional','studio','sex','age','aff','affD','motivo','districts'].forEach(k=>{ if(data[k]!=null) e[k]=JSON.parse(JSON.stringify(data[k])); }); e.prev={date:data.date, values:JSON.parse(JSON.stringify(data.values||{}))}; cur=e; dirty=true; saveDraft(); $('#dlg').close(); setView('form'); }}),
+      el('div',{class:'meta',text:'Scheda nuova con la data di oggi: per ogni test vedi il valore della volta precedente, e il PDF avrà la colonna di confronto.'})));
+  $('#dlg').showModal();
+}
+
+/* ---------- personalizzazione batteria ---------- */
+const HID_KEY='val_hidden'; let hidden=new Set(), cfgTimer=null;
+try{ const h=localStorage.getItem(HID_KEY); if(h) hidden=new Set(JSON.parse(h)); }catch(e){}
+const isOn = r => !hidden.has(r.id);
+const visRows = d => d.sections.reduce((a,s)=>a.concat(s.rows.filter(isOn)),[]);
+function persistHidden(){
+  lsSet(HID_KEY, JSON.stringify([...hidden]));
+  if(!db) return;
+  clearTimeout(cfgTimer);
+  cfgTimer=setTimeout(async()=>{ try{ await db.doc('config/batteria').set({hidden:[...hidden],updated:Date.now()}); }catch(e){ const n=$('#setstatus'); if(n) n.textContent='Impostazione salvata solo su questo dispositivo ('+(e&&e.code||'errore')+').'; } },600);
+}
+function renderSettings(m){
+  m.append(el('div',{class:'info',text:'Scegli quali test fanno parte della tua batteria. I test spenti spariscono dalla compilazione di tutte le schede; i dati già salvati restano e puoi riattivarli in qualsiasi momento.'}));
+  const st=el('div',{class:'meta',id:'setstatus',style:'margin:-6px 0 12px'}); m.append(st);
+  st.textContent='La scelta è salvata in questo browser: su un altro dispositivo va ripetuta.';
+  DISTRICTS.forEach(d=>{
+    const all=d.sections.reduce((a,s)=>a.concat(s.rows),[]);
+    const cnt=el('span',{class:'prog'});
+    const upd=()=>{ cnt.textContent=all.filter(isOn).length+'/'+all.length+' attivi'; };
+    const det=el('details',{class:'dist'}, el('summary',null, el('span',{text:d.name}), cnt));
+    const boxes=[];
+    const setAll=on=>{ all.forEach(r=>on?hidden.delete(r.id):hidden.add(r.id)); boxes.forEach(([r,cb])=>cb.checked=isOn(r)); upd(); persistHidden(); };
+    det.append(el('div',{class:'affrow'}, el('button',{text:'Attiva tutti',onclick:()=>setAll(true)}), el('button',{text:'Disattiva tutto il distretto',onclick:()=>setAll(false)})));
+    d.sections.forEach(s=>{
+      det.append(el('div',{class:'sec',text:s.title}));
+      s.rows.forEach(r=>{
+        const cb=el('input',{type:'checkbox'}); cb.checked=isOn(r); boxes.push([r,cb]);
+        cb.addEventListener('change',()=>{ cb.checked?hidden.delete(r.id):hidden.add(r.id); upd(); persistHidden(); });
+        det.append(el('label',{class:'chk tog'}, cb, r.name+(r.kind==='derived'?' (calcolato)':'')));
+      });
+    });
+    upd(); m.append(det);
+  });
+}
+
+function field(l, input){ return el('div',null, el('label',{text:l}), input); }
+
+let confirmLeave=false;
+function renderForm(m){
+  const touch=()=>{ dirty=true; setStatus('Modifiche non ancora nel PDF'); saveDraft(); updateAll(); };
+  const bind=(inp,key,evt)=>{ inp.addEventListener(evt||'input',()=>{ cur[key]=inp.value; if(key==='studio') lsSet(STUDIO_KEY,inp.value); touch(); }); return inp; };
+  const code=bind(el('input',{type:'text',placeholder:'es. MR-0412',value:cur.code,autocomplete:'off'}),'code');
+  const date=bind(el('input',{type:'date',value:cur.date}),'date');
+  const prof=bind(el('input',{type:'text',placeholder:'Nome del professionista',value:cur.professional}),'professional');
+  const studio=bind(el('input',{type:'text',placeholder:'Nome palestra / studio',value:cur.studio}),'studio');
+  const sex=el('select',null, el('option',{value:'',text:'—'}), el('option',{value:'M',text:'Maschio'}), el('option',{value:'F',text:'Femmina'})); sex.value=cur.sex; bind(sex,'sex','change');
+  const age=bind(el('input',{type:'number',inputmode:'numeric',min:0,max:120,placeholder:'anni',value:cur.age}),'age');
+  const nrs=bind(el('input',{type:'number',min:0,max:10,step:1,inputmode:'numeric',placeholder:'0–10',value:cur.nrs}),'nrs');
+  const motivo=el('textarea',{placeholder:'Motivo dell’accesso, patologia/intervento e data, limitazioni, obiettivi, segnalazioni…'}); motivo.value=cur.motivo; bind(motivo,'motivo');
+  if(cur.prev) m.append(el('div',{class:'info',text:'🔁 Rivalutazione: sotto ogni test trovi il valore della scheda del '+fmtDate(cur.prev.date)+'. Il PDF includerà la colonna di confronto.'}));
+  m.append(el('div',{class:'card'}, el('h2',{text:'Cliente'}),
+    el('div',{class:'grid'}, field('Codice cliente',code), field('Data',date), field('Professionista',prof), field('Palestra / studio',studio), field('Sesso',sex), field('Età',age), field('Dolore attuale NRS',nrs)),
+    el('div',{style:'margin-top:10px'}, field('Anamnesi / motivo di accesso',motivo))));
+
+  const chipsBox=el('div',{class:'chips'}), testsBox=el('div');
+  function drawChips(){
+    chipsBox.replaceChildren();
+    DISTRICTS.filter(d=>visRows(d).length).forEach(d=>{ const on=cur.districts.includes(d.id);
+      chipsBox.append(el('button',{class:'chip'+(on?' active':''),text:(on?'✓ ':'')+d.name,onclick:()=>{ cur.districts=on?cur.districts.filter(x=>x!==d.id):cur.districts.concat(d.id); dirty=true; setStatus('Modifiche non ancora nel PDF'); saveDraft(); drawChips(); drawTests(); }}));
+    });
+  }
+  m.append(el('div',{class:'card'}, el('h2',{text:'Distretti da valutare'}), el('p',{class:'meta',text:'Seleziona solo quelli utili per questo cliente: compaiono i test relativi.'}), chipsBox));
+  m.append(testsBox);
+
+  function drawTests(){
+    testsBox.replaceChildren(); rowUIs={}; progUIs={};
+    DISTRICTS.filter(d=>cur.districts.includes(d.id)&&visRows(d).length).forEach((d,i)=>{
+      const prog=el('span',{class:'prog'}); progUIs[d.id]=prog;
+      const det=el('details',{class:'dist',open:i===0?true:null}, el('summary',null, el('span',{text:d.name}), prog));
+      if(HAS_FORCE(d)){
+        if(!cur.affD) cur.affD={};
+        const sa=el('select',null, el('option',{value:'',text:'Nessuno (confronto sul lato più debole)'}), el('option',{value:'dx',text:'Destro'}), el('option',{value:'sx',text:'Sinistro'}));
+        sa.value = cur.affD[d.id]!=null ? cur.affD[d.id] : (cur.aff||'');
+        sa.addEventListener('change',()=>{ cur.affD[d.id]=sa.value; touch(); });
+        det.append(el('div',{class:'affrow'}, el('label',{text:'Arto interessato in questo distretto (per l’LSI):'}), sa));
+      }
+      d.sections.forEach(s=>{
+        const rows=s.rows.filter(isOn); if(!rows.length) return;
+        det.append(el('div',{class:'sec',text:s.title}));
+        if(s.note) det.append(el('div',{class:'secnote',text:s.note}));
+        rows.forEach(r=>det.append(rowBlock(r,touch,()=>{ hidden.add(r.id); persistHidden(); drawTests(); setStatus('“'+r.name+'” tolto dalla batteria · lo riattivi da ⚙ Batteria'); })));
+      });
+      testsBox.append(det);
+    });
+    if(!cur.districts.length) testsBox.append(el('div',{class:'info',text:'Seleziona almeno un distretto per iniziare.'}));
+    updateAll();
+  }
+  drawChips(); drawTests();
+
+  const concl=el('textarea',{placeholder:'Sintesi: punti di forza, deficit principali, priorità, obiettivi del programma…'}); concl.value=cur.notes._conclusioni||'';
+  concl.addEventListener('input',()=>{cur.notes._conclusioni=concl.value;dirty=true;setStatus('Modifiche non ancora nel PDF');saveDraft();});
+  m.append(el('div',{class:'card'}, el('h2',{text:'Conclusioni del professionista'}), concl));
+
+  const wordBtn=el('button',{text:'📄 Word',onclick:()=>doExport('docx',wordBtn)});
+  const pdfBtn=el('button',{class:'primary',text:'📕 Scarica PDF',onclick:()=>doExport('pdf',pdfBtn)});
+  m.append(el('div',{class:'savebar'},
+    el('span',{class:'status',id:'status',text:dirty?'Modifiche non ancora nel PDF':'Il PDF è il file da conservare: contiene anche i dati per riaprire la scheda'}),
+    pdfBtn, wordBtn,
+    el('button',{text:'Riepilogo',onclick:showSummary}),
+    el('button',{text:'Chiudi',onclick:()=>{ if(dirty&&!confirmLeave){setStatus('Non hai scaricato il PDF con le ultime modifiche: premi di nuovo “Chiudi” per uscire (la bozza resta su questo dispositivo)');confirmLeave=true;setTimeout(()=>confirmLeave=false,5000);return;} confirmLeave=false; setView('list'); }})));
+}
+
+function rowBlock(r, touch, onHide){
+  const wrap=el('div',{class:'test'});
+  const head=el('h3',null, el('span',{text:r.name}), el('span',null, r.ref?el('span',{class:'exp',text:r.ref+'  '}):null, onHide?el('button',{type:'button',class:'hidebtn',title:'Non uso questo test',text:'✕ Non lo uso',onclick:onHide}):null));
+  wrap.append(head);
+  if(r.setup) wrap.append(el('details',{class:'setup'}, el('summary',{text:'Posizione / setup'}), el('p',{text:r.setup})));
+  const ui={flags:el('div',{class:'flags'})};
+  rowUIs[r.id]=ui;
+  const ph = cur.prev ? prevText(r, cur.prev.values||{}, ctxOf(cur)) : '';
+  const phEl = cur.prev ? el('div',{class:'meta prevhint',text:'Precedente ('+fmtDate(cur.prev.date)+'): '+(ph||'non rilevato')}) : null;
+  if(r.kind==='derived'){ ui.der=el('div',{class:'flags'}); wrap.append(ui.der, ui.flags, phEl); return wrap; }
+  const v = cur.values[r.id] || (cur.values[r.id]={});
+  const sides=el('div',{class:'sides'+(r.bi?'':' one')});
+  function mk(key,lab){
+    let inp;
+    if(r.kind==='chk'){
+      const box=el('div',{class:'seg'});
+      const btns=[['A','Assente'],['P','Presente']].map(([val,txt])=>{ const b=el('button',{type:'button',class:'segb',text:txt}); b.addEventListener('click',()=>{ v[key]=(norm(v[key])===val)?'':val; paint(); touch(); }); box.append(b); return [val,b]; });
+      function paint(){ btns.forEach(([val,b])=>{ b.classList.toggle('on-a', val==='A'&&norm(v[key])==='A'); b.classList.toggle('on-p', val==='P'&&norm(v[key])==='P'); }); }
+      paint();
+      return el('div',null, el('label',{text:lab}), box);
+    }
+    if(r.kind==='sel'){
+      inp=el('select',null, ...r.opts.map(o=>el('option',{value:o==='—'?'':o,text:o}))); inp.value=v[key]||'';
+      inp.addEventListener('change',()=>{ v[key]=inp.value; touch(); });
+    } else {
+      const props={type:'number',step:'any',placeholder:r.unit||'',value:v[key]!=null?v[key]:''};
+      if(!r.neg) props.inputmode='decimal'; if(r.max!=null) props.max=r.max; if(r.min!=null) props.min=r.min;
+      inp=el('input',props);
+      inp.addEventListener('input',()=>{ v[key]=inp.value; touch(); });
+      inp.addEventListener('focus',()=>{ lastField={inp,r}; });
+    }
+    return el('div',null, el('label',{text:lab+(r.kind==='num'&&r.unit?' ('+r.unit+')':'')}), inp);
+  }
+  if(r.bi) sides.append(mk('dx','Destra'), mk('sx','Sinistra')); else sides.append(mk('val','Valore'));
+  wrap.append(sides, phEl, ui.flags);
+  const note=el('div',{class:'note'}, el('input',{type:'text',placeholder:'Note (dolore, compensi, qualità del movimento…)',value:cur.notes[r.id]||''}));
+  note.firstChild.addEventListener('input',e=>{ cur.notes[r.id]=e.target.value; dirty=true; setStatus('Modifiche non ancora nel PDF'); saveDraft(); });
+  wrap.append(note);
+  return wrap;
+}
+
+function updateAll(){
+  const V=cur.values, ctx=ctxOf(cur);
+  DISTRICTS.forEach(d=>{
+    let tot=0, done=0;
+    d.sections.forEach(s=>s.rows.forEach(r=>{
+      if(r.kind!=='derived' && isOn(r)) { tot++; if(hasVal(r.id,V)) done++; }
+      const ui=rowUIs[r.id]; if(!ui) return;
+      const a=analyze(r,V,ctx);
+      ui.flags.replaceChildren(...a.flags.map(f=>el('span',{class:'flag '+(f.cls||''),text:f.txt})));
+      if(ui.der){
+        const dd=a.der||{}; const parts=[];
+        if(dd.dx!=null||dd.sx!=null){ if(dd.dx) parts.push('Dx '+dd.dx); if(dd.sx) parts.push('Sx '+dd.sx); } else if(dd.val) parts.push(dd.val);
+        ui.der.replaceChildren(...(parts.length?parts:['—']).map(t=>el('span',{class:'flag der',text:t})));
+      }
+    }));
+    if(progUIs[d.id]) progUIs[d.id].textContent=done+'/'+tot+' compilati';
+  });
+}
+
+/* ---------- salvataggio ---------- */
+async function save(){
+  if(!cur.code.trim()){ setStatus('Inserisci il codice cliente prima di salvare'); return; }
+  if(!db){ setStatus('Salvataggio condiviso non disponibile: usa Word / PDF / CSV'); return; }
+  cur.updated=Date.now();
+  try{ setStatus('Salvataggio…'); await db.doc(COLL+'/'+cur.id).set(JSON.parse(JSON.stringify(cur))); dirty=false; try{localStorage.removeItem(DRAFT_KEY);}catch(e){} setStatus('✓ Salvato '+new Date().toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'})); }
+  catch(e){ setStatus('Errore di salvataggio ('+(e&&e.code||'sconosciuto')+'). La bozza resta in questo browser.'); }
+}
+
+/* ---------- riepilogo ---------- */
+function showSummary(){
+  const M=buildModel(cur), body=$('#dlgbody'); body.replaceChildren();
+  body.append(el('h2',{text:M.title+' · '+(cur.code||'senza codice'),style:'margin-top:0;color:var(--teal)'}), el('p',{class:'meta',text:M.meta.map(x=>x[0]+': '+x[1]).join(' · ')}));
+  if(!M.districts.length || M.districts.every(d=>!d.sections.length)) body.append(el('p',{text:'Nessun test compilato.'}));
+  M.districts.forEach(d=>{ if(!d.sections.length) return; body.append(el('h4',{text:d.name}));
+    d.sections.forEach(s=>{ body.append(el('div',{class:'meta',text:s.title}));
+      const tb=el('table',null, el('thead',null, el('tr',null, ...M.head.map(h=>el('th',{text:h})))), el('tbody',null, ...s.rows.map((r,ri)=>el('tr',null, ...r.map((c,ci)=>el('td',{text:c,class:ci===M.ec&&s.status[ri]?'st-'+s.status[ri]:null}))))));
+      body.append(tb); }); });
+  if(M.conclusioni) body.append(el('h4',{text:'Conclusioni'}), el('p',{text:M.conclusioni}));
+  $('#dlg').showModal();
+}
+
+/* ---------- esportazioni ---------- */
+const FILE_BASE = ev=>'Scheda_'+((ev.code||'cliente').replace(/[^\w-]+/g,'_'))+'_'+(ev.date||today());
+function csvEsc(s){ s=String(s==null?'':s); return /[;"\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s; }
+async function offerDownload(filename, data){
+  const blob = data instanceof Blob ? data : new Blob([data]);
+  const url=URL.createObjectURL(blob); const a=el('a',{href:url,download:filename}); document.body.append(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),10000); return true;
+}
+async function exportCsv(ev){
+  const M=buildModel(ev); const lines=[['Codice','Data','Professionista','Distretto','Sezione','Test','Dx / Valore','Sx','Riferimento','Esito / note'].join(';')];
+  M.districts.forEach(d=>d.sections.forEach(s=>s.rows.forEach(r=>lines.push([ev.code,ev.date,ev.professional,d.name,s.title,...r].map(csvEsc).join(';')))));
+  const text='﻿'+lines.join('\n'); await offerDownload(FILE_BASE(ev)+'.csv', text, text);
+}
+function loadScript(url){ return new Promise((res,rej)=>{ const s=document.createElement('script'); s.src=url; s.onload=res; s.onerror=()=>rej(new Error('load '+url)); document.head.append(s); }); }
+async function doExport(kind, btn){
+  const old=btn.textContent; btn.disabled=true; btn.textContent='Preparo…';
+  try{
+    const M=buildModel(cur);
+    if(kind==='docx'){
+      if(!window.docx) await loadScript('https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js');
+      const blob=await makeDocx(window.docx, M);
+      if(await offerDownload(FILE_BASE(cur)+'.docx', blob)) setStatus('✓ Word scaricato (copia modificabile in Word). Per riaprire la scheda qui serve il PDF');
+    } else {
+      if(!window.jspdf) await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
+      if(!(window.jspdf && window.jspdf.jsPDF.API.autoTable)) await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js');
+      const blob=makePdf(window.jspdf, M, cur);
+      if(await offerDownload(FILE_BASE(cur)+'.pdf', blob)){ dirty=false; setStatus('✓ PDF scaricato: salvalo su Drive. Per modificarlo in futuro, ricaricalo da Home → Riprendi una scheda'); }
+    }
+  }catch(e){ setStatus('Esportazione non riuscita: '+(e&&e.message||'errore')); }
+  btn.disabled=false; btn.textContent=old;
+}
+
+/* Word */
+async function makeDocx(D, M){
+  const {Document,Packer,Paragraph,Table,TableRow,TableCell,TextRun,WidthType,ShadingType,AlignmentType,BorderStyle,Footer,PageNumber,HeightRule} = D;
+  const TEAL='1F5F5B', LIGHT='DCE6F1', GREEN='E2EFDA';
+  const bd={style:BorderStyle.SINGLE,size:4,color:'A6A6A6'}; const borders={top:bd,bottom:bd,left:bd,right:bd};
+  const W=M.hasPrev?[2300,1100,1000,1550,1650,2300]:[2900,1350,1150,2000,2500]; // totale 9900 dxa
+  const cell=(text,w,o={})=>new TableCell({width:{size:w,type:WidthType.DXA},borders,shading:o.fill?{type:ShadingType.CLEAR,fill:o.fill,color:'auto'}:undefined,margins:{top:60,bottom:60,left:90,right:90},
+    children:[new Paragraph({children:[new TextRun({text:String(text||''),bold:!!o.bold,size:o.size||18,color:o.color})]})]});
+  const heading=(text,size,fill)=>new Paragraph({keepNext:true,keepLines:true,spacing:{before:200,after:100},shading:fill?{type:ShadingType.CLEAR,fill,color:'auto'}:undefined,children:[new TextRun({text,bold:true,size,color:fill?'FFFFFF':TEAL})]});
+  const kids=[];
+  kids.push(new Paragraph({children:[new TextRun({text:M.studio||'',italics:true,size:18,color:'7F7F7F'})],alignment:AlignmentType.RIGHT}));
+  kids.push(new Paragraph({spacing:{before:80,after:120},shading:{type:ShadingType.CLEAR,fill:TEAL,color:'auto'},children:[new TextRun({text:' '+M.title,bold:true,size:34,color:'FFFFFF'})]}));
+  const half=Math.ceil(M.meta.length/2);
+  kids.push(new Table({width:{size:9900,type:WidthType.DXA},columnWidths:[1700,3250,1700,3250],rows:Array.from({length:half},(_,i)=>{ const a=M.meta[i], b=M.meta[i+half];
+    return new TableRow({children:[cell(a[0],1700,{bold:true,fill:LIGHT}),cell(a[1],3250),cell(b?b[0]:'',1700,{bold:true,fill:b?LIGHT:undefined}),cell(b?b[1]:'',3250)]}); })}));
+  kids.push(new Paragraph({spacing:{before:80},children:[new TextRun({text:M.note,italics:true,size:16,color:'7F7F7F'})]}));
+  if(M.motivo){ kids.push(heading('Anamnesi / motivo di accesso',24)); kids.push(new Paragraph({children:[new TextRun({text:M.motivo,size:20})]})); }
+  M.districts.forEach(d=>{
+    kids.push(heading(d.name,28,TEAL));
+    if(!d.sections.length){ kids.push(new Paragraph({children:[new TextRun({text:'Nessun test compilato.',italics:true,size:18})]})); return; }
+    d.sections.forEach(s=>{
+      kids.push(heading(s.title,22));
+      const head=M.head;
+      kids.push(new Table({width:{size:9900,type:WidthType.DXA},columnWidths:W,rows:[
+        new TableRow({tableHeader:true,children:head.map((h,i)=>cell(h,W[i],{bold:true,fill:LIGHT}))}),
+        ...s.rows.map((r,ri)=>new TableRow({cantSplit:true,children:r.map((c,i)=>cell(c,W[i],{size:18,fill:i===M.ec?({warn:'FFF2CC',bad:'F8D7DA'}[s.status[ri]]):undefined}))}))]}));
+    });
+  });
+  if(M.conclusioni){ kids.push(heading('Conclusioni del professionista',24)); kids.push(new Paragraph({children:[new TextRun({text:M.conclusioni,size:20})]})); }
+  const doc=new Document({creator:'Scheda valutazione',title:M.title,
+    styles:{default:{document:{run:{font:'Calibri',size:20}}}},
+    sections:[{properties:{page:{size:{width:11906,height:16838},margin:{top:900,bottom:900,left:1000,right:1000}}},
+      footers:{default:new Footer({children:[new Paragraph({alignment:AlignmentType.CENTER,children:[new TextRun({text:'Scheda valutazione · '+(M.meta[0][1]||'')+' · Pag. ',size:16,color:'7F7F7F'}),new TextRun({children:[PageNumber.CURRENT],size:16,color:'7F7F7F'})]})]})},
+      children:kids}]});
+  return await Packer.toBlob(doc);
+}
+
+/* PDF */
+function makePdf(P, M, data){
+  const clean=s=>String(s==null?'':s).replace(/≥/g,'>=').replace(/≤/g,'<=').replace(/−/g,'-').replace(/[–—]/g,'-').replace(/≈/g,'~').replace(/→/g,'->').replace(/[♂]/g,'M').replace(/[♀]/g,'F').replace(/[“”]/g,'"').replace(/[’]/g,"'").replace(/✓/g,'OK');
+  const doc=new P.jsPDF({unit:'pt',format:'a4'});
+  const at=o=>{ if(typeof doc.autoTable==='function') return doc.autoTable(o); return P.autoTable(doc,o); };
+  const teal=[31,95,91], light=[220,230,241], pageW=doc.internal.pageSize.getWidth();
+  let y=36;
+  doc.setFont('helvetica','italic'); doc.setFontSize(9); doc.setTextColor(127); doc.text(clean(M.studio||''), pageW-40, y, {align:'right'}); y+=10;
+  doc.setFillColor(...teal); doc.rect(40,y,pageW-80,34,'F'); doc.setTextColor(255); doc.setFont('helvetica','bold'); doc.setFontSize(16); doc.text(clean(M.title), 52, y+22); y+=48;
+  const half=Math.ceil(M.meta.length/2), body=[];
+  for(let i=0;i<half;i++){ const a=M.meta[i], b=M.meta[i+half]; body.push([clean(a[0]),clean(a[1]),b?clean(b[0]):'',b?clean(b[1]):'']); }
+  at({startY:y,body,theme:'grid',styles:{fontSize:9,cellPadding:4,lineColor:[166,166,166],lineWidth:.5,textColor:20},columnStyles:{0:{fillColor:light,fontStyle:'bold',cellWidth:100},1:{cellWidth:150},2:{fillColor:light,fontStyle:'bold',cellWidth:100},3:{cellWidth:165}},margin:{left:40,right:40}});
+  y=doc.lastAutoTable.finalY+12;
+  doc.setFont('helvetica','italic'); doc.setFontSize(8); doc.setTextColor(127);
+  { const nl=doc.splitTextToSize(clean(M.note),pageW-80); doc.text(nl,40,y+2); y+=nl.length*10+8; }
+  const ensure=h=>{ if(y+h>doc.internal.pageSize.getHeight()-50){ doc.addPage(); y=40; } };
+  const title=(t,size,fill)=>{ ensure(fill?130:70); if(fill){ doc.setFillColor(...teal); doc.rect(40,y,pageW-80,22,'F'); doc.setTextColor(255); } else doc.setTextColor(...teal); doc.setFont('helvetica','bold'); doc.setFontSize(size); doc.text(clean(t), fill?48:40, y+(fill?15:11)); y+=fill?30:20; };
+  const para=t=>{ doc.setTextColor(30); doc.setFont('helvetica','normal'); doc.setFontSize(10); const lines=doc.splitTextToSize(clean(t),pageW-80); ensure(lines.length*12+6); doc.text(lines,40,y+10); y+=lines.length*12+8; };
+  if(M.motivo){ title('Anamnesi / motivo di accesso',11); para(M.motivo); }
+  M.districts.forEach(d=>{
+    title(d.name,13,true);
+    if(!d.sections.length){ para('Nessun test compilato.'); return; }
+    d.sections.forEach(s=>{
+      title(s.title,10.5);
+      at({startY:y,head:[M.head],body:s.rows.map(r=>r.map(clean)),theme:'grid',
+        styles:{fontSize:8.5,cellPadding:3.5,lineColor:[166,166,166],lineWidth:.5,textColor:20,overflow:'linebreak'},
+        headStyles:{fillColor:light,textColor:20,fontStyle:'bold'},
+        columnStyles:M.hasPrev?{0:{cellWidth:118},1:{cellWidth:52},2:{cellWidth:46},3:{cellWidth:80},4:{cellWidth:88},5:{cellWidth:'auto'}}:{0:{cellWidth:140},1:{cellWidth:62},2:{cellWidth:50},3:{cellWidth:110},4:{cellWidth:'auto'}},margin:{left:40,right:40},
+        didParseCell:h=>{ if(h.section==='body'&&h.column.index===M.ec){ const st=s.status[h.row.index]; if(st==='warn') h.cell.styles.fillColor=[255,242,204]; if(st==='bad') h.cell.styles.fillColor=[248,215,218]; } }});
+      y=doc.lastAutoTable.finalY+12;
+    });
+  });
+  if(M.conclusioni){ title('Conclusioni del professionista',11); para(M.conclusioni); }
+  ensure(60); y+=24; doc.setDrawColor(120); doc.setLineWidth(.5); doc.line(pageW-260,y+18,pageW-40,y+18);
+  doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(80); doc.text('Firma del professionista', pageW-260, y+30);
+  if(data){ doc.addMetadata('VALDATA1:'+b64enc(JSON.stringify(Object.assign({format:'scheda-valutazione',v:1},data)))+':ENDVAL','http://scheda-valutazione/ns/'); }
+  doc.setProperties({title:clean(M.title+' - '+(M.meta[0][1]||'')), subject:'Scheda di valutazione funzionale', creator:'Scheda di valutazione funzionale'});
+  const pages=doc.internal.getNumberOfPages();
+  for(let i=1;i<=pages;i++){ doc.setPage(i); doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(127); doc.text(clean('Scheda valutazione - '+(M.meta[0][1]||'')+' - Pag. '+i+'/'+pages), pageW/2, doc.internal.pageSize.getHeight()-24, {align:'center'}); }
+  return doc.output('blob');
+}
+
+/* ---------- cronometro ---------- */
+(function(){
+  let t0=0, acc=0, run=false, raf=0; const disp=$('#swtime'), go=$('#swgo');
+  const fmt=ms=>{ const s=ms/1000; return Math.floor(s/60)+':'+(s%60).toFixed(1).padStart(4,'0'); };
+  function tick(){ disp.textContent=fmt(acc+(run?performance.now()-t0:0)); if(run) raf=requestAnimationFrame(tick); }
+  go.addEventListener('click',()=>{ if(run){ acc+=performance.now()-t0; run=false; go.textContent='Riprendi'; cancelAnimationFrame(raf); tick(); } else { t0=performance.now(); run=true; go.textContent='Stop'; tick(); } });
+  $('#swreset').addEventListener('click',()=>{ run=false; acc=0; go.textContent='Avvia'; cancelAnimationFrame(raf); tick(); });
+  $('#swfill').addEventListener('click',()=>{ if(!lastField||lastField.r.unit!=='s') return; const total=(acc+(run?performance.now()-t0:0))/1000; lastField.inp.value=total.toFixed(1); lastField.inp.dispatchEvent(new Event('input',{bubbles:true})); });
+  $('#swbtn').addEventListener('click',()=>{ const p=$('#swpanel'); p.style.display=p.style.display==='block'?'none':'block'; });
+})();
+
+/* ---------- avvio ---------- */
+$('#navList').addEventListener('click',()=>setView('list'));
+$('#navNew').addEventListener('click',startNew);
+$('#navSet').addEventListener('click',()=>setView('settings'));
+$('#dlgclose').addEventListener('click',()=>$('#dlg').close());
+render();
+</script>
+</body>
+</html>
