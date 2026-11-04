@@ -228,9 +228,8 @@ const DISTRICTS = [
   {title:'B — Simmetria posturale: triangolo della taglia', note:'Valutazione solo qualitativa (soggetto in piedi, arti rilassati): non si misura in cm. Un’asimmetria evidente è un rilievo di screening da segnalare e, se marcato o di nuova comparsa, da rimandare al medico.', rows:[
     sel('tri','Simmetria dei due triangoli (spazio braccio-fianco)','',['—','Simmetrici','Asimmetrici · Dx più ampio','Asimmetrici · Sx più ampio'],{bi:false,ref:'Simmetrici'})
   ]},
-  {title:'C — Plank test (con app dedicata)', note:'Riferimenti di uso comune, non normative AAOS: da personalizzare per età, peso, livello. Il confronto pre/post sullo stesso soggetto è il dato più affidabile.', rows:[
-    numf('pl_t','Tempo di tenuta con allineamento corretto','','s',{ref:'Adulti sani: ♂ ≥ 60 s · ♀ ≥ 45 s · over-65 ≥ 30 s',plank:true}),
-    numf('pl_c','Feedback app: n. correzioni segnalate','','n',{ref:'Il minor numero possibile'})
+  {title:'C — Plank test', note:'Riferimenti di uso comune, non normative AAOS: da personalizzare per età, peso, livello. Il confronto pre/post sullo stesso soggetto è il dato più affidabile.', rows:[
+    numf('pl_t','Tempo di tenuta con allineamento corretto','','s',{ref:'Adulti sani: ♂ ≥ 60 s · ♀ ≥ 45 s · over-65 ≥ 30 s',plank:true})
   ]}
  ]},
  {id:'gomito', name:'7 · Gomito-Polso-Mano', sections:[
