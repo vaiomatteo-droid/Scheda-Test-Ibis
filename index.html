@@ -685,7 +685,7 @@ async function doExport(kind, btn){
 /* Word */
 async function makeDocx(D, M){
   const {Document,Packer,Paragraph,Table,TableRow,TableCell,TextRun,WidthType,ShadingType,AlignmentType,BorderStyle,Footer,PageNumber,HeightRule} = D;
-  const TEAL='1F5F5B', LIGHT='DCE6F1', GREEN='E2EFDA';
+  const TEAL='2E4E6B', LIGHT='DCE6F1', GREEN='E2EFDA';
   const bd={style:BorderStyle.SINGLE,size:4,color:'A6A6A6'}; const borders={top:bd,bottom:bd,left:bd,right:bd};
   const W=M.hasPrev?[2300,1100,1000,1550,1650,2300]:[2900,1350,1150,2000,2500]; // totale 9900 dxa
   const cell=(text,w,o={})=>new TableCell({width:{size:w,type:WidthType.DXA},borders,shading:o.fill?{type:ShadingType.CLEAR,fill:o.fill,color:'auto'}:undefined,margins:{top:60,bottom:60,left:90,right:90},
@@ -724,7 +724,7 @@ function makePdf(P, M, data){
   const clean=s=>String(s==null?'':s).replace(/≥/g,'>=').replace(/≤/g,'<=').replace(/−/g,'-').replace(/[–—]/g,'-').replace(/≈/g,'~').replace(/→/g,'->').replace(/[♂]/g,'M').replace(/[♀]/g,'F').replace(/[“”]/g,'"').replace(/[’]/g,"'").replace(/✓/g,'OK');
   const doc=new P.jsPDF({unit:'pt',format:'a4'});
   const at=o=>{ if(typeof doc.autoTable==='function') return doc.autoTable(o); return P.autoTable(doc,o); };
-  const teal=[31,95,91], light=[220,230,241], pageW=doc.internal.pageSize.getWidth();
+  const teal=[46,78,107], light=[220,230,241], pageW=doc.internal.pageSize.getWidth();
   let y=36;
   doc.setFont('helvetica','italic'); doc.setFontSize(9); doc.setTextColor(127); doc.text(clean(M.studio||''), pageW-40, y, {align:'right'}); y+=10;
   doc.setFillColor(...teal); doc.rect(40,y,pageW-80,34,'F'); doc.setTextColor(255); doc.setFont('helvetica','bold'); doc.setFontSize(16); doc.text(clean(M.title), 52, y+22); y+=48;
