@@ -167,6 +167,7 @@ const DISTRICTS = [
   {title:'B — Forza isometrica (make test)', note:'Extra/intrarotatori testati a braccio addotto per evitare zone di impingement.', rows:[
     frc('s_fabd','Abduzione (deltoide)','In piedi, braccio addotto lungo il fianco, cuscinetto laterale prossimale al gomito.'),
     frc('s_fer','Extrarotatori','Gomito flesso 90°, braccio addotto, cuscinetto sul dorso del polso.'),
+    sel('s_fer_d','Extrarotatori: dolore durante la rotazione esterna contro resistenza','Durante il test di forza degli extrarotatori, segna se la spinta in rotazione esterna provoca dolore alla spalla.',['—','Negativo · dolore assente','Positivo · dolore presente'],{ref:'Negativo (indaga il sottospinato)',prov:true,provTxt:'sofferenza sottospinato'}),
     frc('s_fir','Intrarotatori','Stessa posizione, cuscinetto all’interno del polso.')
   ]},
   {title:'C — Test funzionale: Apley scratch test', note:'Livello vertebrale raggiunto dal terzo dito. Atteso: dietro la nuca ~T3–T7, dietro la schiena ~T7–T12. Il dato più rilevante è la simmetria Dx/Sx (differenza di più di un paio di livelli = restrizione da approfondire).', rows:[
@@ -313,7 +314,7 @@ function analyze(r, V, ctx){
   if(r.id==='sl_n'){ ['dx','sx'].forEach(s=>{ const x=n(v[s]); if(x!=null&&x<5) out.flags.push({cls:'warn',txt:(s==='dx'?'Dx ':'Sx ')+x+'/5 corretti'}); }); }
   if(r.ydiff){ const a=n(v.dx), b=n(v.sx); if(a!=null&&b!=null){ const d=Math.abs(a-b); out.flags.push({cls:d>=r.ydiff?'warn':'ok', txt:'Differenza Dx/Sx '+d.toFixed(1)+' cm'+(d>=r.ydiff?' (≥ '+r.ydiff+' cm)':'')}); } }
   if(r.vert && v.dx && v.sx){ const i=VERT.indexOf(v.dx), j=VERT.indexOf(v.sx); if(i>0&&j>0){ const d=Math.abs(i-j); out.flags.push({cls:d>2?'warn':'ok', txt:'Differenza Dx/Sx: '+d+(d===1?' livello':' livelli')}); } }
-  if(r.prov){ ['dx','sx'].forEach(sd=>{ if(/^Positivo/.test(v[sd]||'')) out.flags.push({cls:'bad',txt:(sd==='dx'?'Dx':'Sx')+' positivo: dolore presente'}); }); }
+  if(r.prov){ ['dx','sx'].forEach(sd=>{ if(/^Positivo/.test(v[sd]||'')) out.flags.push({cls:'bad',txt:(sd==='dx'?'Dx':'Sx')+' positivo: dolore presente'+(r.provTxt?' · '+r.provTxt:'')}); }); }
   if(r.sls){
     ['dx','sx'].forEach(s=>{
       const x=n(v[s]); if(x==null) return; const lab=s==='dx'?'Dx ':'Sx ';
