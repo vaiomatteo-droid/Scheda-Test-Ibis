@@ -139,103 +139,101 @@ const CS30 = {
   F:[[60,64,12,17],[65,69,11,16],[70,79,10,15],[80,84,9,14],[85,200,4,13]]
 };
 
+const PROV = ['—','Negativo · dolore assente','Positivo · dolore presente'];
+const FMS = ['—','3','2','1','0 · dolore'];
+function fms(id,name,setup,bi,o){ return Object.assign({id,name,setup,kind:'sel',bi:!!bi,opts:FMS,cat:'func',fms:true,ref:'3 = ottimale'},o||{}); }
+function txt(id,name,ph,o){ return Object.assign({id,name,setup:'',kind:'txt',bi:false,cat:'func',ph},o||{}); }
+const GATE_MOB = 'Eseguire solo se è raggiunto lo standard minimo di mobilità (standard in definizione).';
+const fmsNum = x => { const f=parseFloat(x); return isNaN(f)?null:f; };
+function fmsScore(V,id,bi){ const v=V[id]||{}; if(!bi) return fmsNum(v.val); const a=fmsNum(v.dx), b=fmsNum(v.sx); if(a==null||b==null) return null; return Math.min(a,b); }
+
 const DISTRICTS = [
  {id:'ginocchio', name:'1 · Ginocchio', sections:[
   {title:'A — Range di movimento (ROM)', note:'Per l’estensione scrivi i gradi misurati: −10 = il ginocchio resta flesso di 10°.', rows:[
-    rom('g_flex','Flessione ginocchio','Supino o prono. Device sulla faccia laterale della tibia, a metà fra ginocchio e caviglia. Azzerare a ginocchio esteso.',135),
+    rom('g_flex','Flessione ginocchio','Prono. Device sulla faccia laterale della tibia, a metà fra ginocchio e caviglia. Azzerare a ginocchio esteso.',135),
     rom('g_ext','Estensione ginocchio','Stessa posizione e stesso punto. Si parte da ginocchio flesso e si misura quanto manca per tornare a 0°.',0,{neg:true,ext:true})
   ]},
-  {title:'B — Forza isometrica (make test)', note:'3 prove per lato, si registra il massimo. Se entrambi gli arti sono deboli l’LSI può risultare accettabile: leggi sempre anche i kg assoluti.', rows:[
+  {title:'B — Forza isometrica (make test)', note:'3 prove per lato, si registra il massimo. Misura e riporta sempre la distanza del cuscinetto dalla rotula, così nei retest il dinamometro va nello stesso punto. Se entrambi gli arti sono deboli l’LSI può risultare accettabile: leggi sempre anche i kg assoluti.', rows:[
+    numb('g_dist','Distanza del cuscinetto dal polo inferiore della rotula','Misura con il metro dal polo inferiore della rotula al centro del cuscinetto. Usa la stessa distanza in tutte le valutazioni.','cm',{ref:'Uguale nei retest'}),
     frc('g_qf','Estensione (quadricipite)','Seduto, ginocchio flesso 90°, cuscinetto su tibia distale anteriore, cintura di ancoraggio.'),
-    frc('g_ham','Flessione (ischiocrurali)','Seduto, ginocchio flesso 90°, cuscinetto su tibia distale posteriore.')
-  ]},
-  {title:'C — Test funzionale: single-leg squat', note:'Fino a 5 squat monopodalici a corpo libero per lato (discesa ~60° in 2–3 s). Osserva il controllo dinamico sul piano frontale. Riferimento: nessun item presente (score 0) con 5 ripetizioni corrette.', rows:[
-    chk('sl_val','Valgismo dinamico del ginocchio'),
-    chk('sl_pel','Caduta bacino controlaterale (Trendelenburg)'),
-    chk('sl_tr','Tronco inclinato / perdita equilibrio'),
-    {id:'sl_score',kind:'derived',name:'Score (item presenti, 0–3)',cat:'func',ref:'0',fn:(V)=>({dx:cnt(V,['sl_val','sl_pel','sl_tr'],'dx'),sx:cnt(V,['sl_val','sl_pel','sl_tr'],'sx')})},
-    numb('sl_n','N. squat completati correttamente (max 5)','', 'n',{ref:'5',max:5})
+    frc('g_ham','Flessione (ischiocrurali)','Prono, ginocchio flesso 90°, cuscinetto su tibia distale posteriore. Eseguire solo se la flessione raggiunge 90°: altrimenti valutare solo la mobilità (frequente nel post-operatorio).',{gate:{id:'g_flex',min:90}})
   ]}
  ]},
  {id:'spalla', name:'2 · Spalla', sections:[
   {title:'A — Range di movimento (ROM)', rows:[
     rom('s_flex','Flessione','In piedi o seduto, di profilo. Device sulla faccia laterale del braccio, appena sopra il gomito. Azzerare a braccio lungo il fianco.',180),
     rom('s_abd','Abduzione','In piedi o seduto, di fronte. Stesso punto di applicazione. Azzerare a braccio lungo il fianco.',180),
-    rom('s_er','Rotazione esterna','Supino, braccio abdotto a 90° sul lettino, gomito flesso 90°, avambraccio verticale. Device sul dorso dell’avambraccio distale. Azzerare con avambraccio verticale.',90),
+    numb('s_abdw','Abduzione con dorso della mano al muro','In piedi, braccia lungo i fianchi, device sul polso. Setup in definizione. Attenzione al compenso in inclinazione laterale del tronco.','°',{ref:'In definizione'}),
+    chk('s_abdw_c','Abduzione al muro: compenso in inclinazione laterale del tronco'),
+    rom('s_er','Rotazione esterna','Supino, braccio abdotto a 90° sul lettino, gomito flesso 90°, avambraccio verticale. Device sul dorso dell’avambraccio distale. Azzerare con avambraccio verticale. Richiede occhio per i compensi di scapola.',90),
     rom('s_ir','Rotazione interna','Stessa posizione e stesso punto, movimento in direzione opposta.',70)
   ]},
-  {title:'B — Forza isometrica (make test)', note:'Extra/intrarotatori testati a braccio addotto per evitare zone di impingement.', rows:[
+  {title:'B — Forza isometrica (make test)', note:GATE_MOB+' Extra/intrarotatori testati a braccio addotto per evitare zone di impingement.', rows:[
     frc('s_fabd','Abduzione (deltoide)','In piedi, braccio addotto lungo il fianco, cuscinetto laterale prossimale al gomito.'),
     frc('s_fer','Extrarotatori','Gomito flesso 90°, braccio addotto, cuscinetto sul dorso del polso.'),
-    sel('s_fer_d','Extrarotatori: dolore durante la rotazione esterna contro resistenza','Durante il test di forza degli extrarotatori, segna se la spinta in rotazione esterna provoca dolore alla spalla.',['—','Negativo · dolore assente','Positivo · dolore presente'],{ref:'Negativo (indaga il sottospinato)',prov:true,provTxt:'sofferenza sottospinato'}),
+    sel('s_fer_d','Extrarotatori: dolore durante la rotazione esterna contro resistenza','Durante il test di forza degli extrarotatori, segna se la spinta in rotazione esterna provoca dolore alla spalla.',PROV,{ref:'Negativo (indaga il sottospinato)',prov:true,provTxt:'sofferenza sottospinato'}),
     frc('s_fir','Intrarotatori','Stessa posizione, cuscinetto all’interno del polso.')
   ]},
-  {title:'C — Test funzionale: Apley scratch test', note:'Livello vertebrale raggiunto dal terzo dito. Atteso: dietro la nuca ~T3–T7, dietro la schiena ~T7–T12. Il dato più rilevante è la simmetria Dx/Sx (differenza di più di un paio di livelli = restrizione da approfondire).', rows:[
-    sel('s_apn','Dietro la nuca (extrarot./abd.)','',VERT,{ref:'~T3–T7',vert:true}),
-    sel('s_aps','Dietro la schiena (intrarot./add.)','',VERT,{ref:'~T7–T12',vert:true})
+  {title:'C — Apley scratch test (0-3)', note:'Si misura prima la lunghezza della mano (piega distale del polso → punta del dito medio). Il cliente chiude i pugni e in un solo movimento porta una mano dietro la nuca (dall’alto) e l’altra dietro la schiena (dal basso), cercando di avvicinarle. Si misura la distanza tra i pugni. Il lato è quello del braccio che sta in alto. 3 = pugni entro 1 lunghezza della mano · 2 = entro 1,5 · 1 = oltre 1,5 · 0 = dolore durante il test.', rows:[
+    fms('s_apley','Apley scratch test (lato = braccio in alto)','',true)
   ]},
   {title:'D — Test provocativi (a cura del fisioterapista)', note:'Eseguiti e interpretati dal fisioterapista. Esito: positivo = la manovra riproduce il dolore abituale alla spalla. Ogni test da solo è poco specifico: si leggono insieme. Debolezza o compensi si annotano nelle note.', rows:[
-    sel('s_neer','Test di Neer','Paziente seduto, braccio rilassato lungo il fianco. Il fisioterapista, dietro di lui, con una mano stabilizza la scapola premendo verso il basso sull’acromion; con l’altra porta passivamente il braccio, ruotato internamente (pollice verso il basso), in flessione anteriore fino al massimo. Positivo se compare dolore nella parte antero-laterale della spalla, di solito nell’ultima parte del movimento. Evidenzia sofferenza del sovraspinato (e della borsa sottoacromiale) compressi sotto l’acromion.',['—', 'Negativo · dolore assente', 'Positivo · dolore presente'],{ref:'Negativo (indaga il sovraspinato)',prov:true}),
-    sel('s_hk','Test di Hawkins-Kennedy','Paziente seduto o in piedi. Il fisioterapista porta il braccio in flessione anteriore a 90° con il gomito flesso a 90°, sostenendo il gomito; poi ruota internamente la spalla in modo passivo abbassando l’avambraccio. Positivo se compare dolore antero-laterale durante la rotazione interna. Evidenzia sofferenza del sovraspinato (e della borsa sottoacromiale) compressi contro il legamento coraco-acromiale.',['—', 'Negativo · dolore assente', 'Positivo · dolore presente'],{ref:'Negativo (indaga il sovraspinato)',prov:true}),
-    sel('s_jobe','Test di Jobe (empty can)','Paziente in piedi o seduto, braccia elevate a 90° nel piano della scapola (circa 30° in avanti rispetto al piano frontale), gomiti estesi, pollici rivolti verso il basso (“lattina vuota”). Il fisioterapista spinge verso il basso sugli avambracci distali mentre il paziente resiste; si confrontano i due lati. Positivo se compare dolore (annota nelle note anche l’eventuale debolezza). Evidenzia sofferenza del sovraspinato.',['—', 'Negativo · dolore assente', 'Positivo · dolore presente'],{ref:'Negativo (indaga il sovraspinato)',prov:true})
+    txt('s_ft','Eseguiti da','Nome del fisioterapista'),
+    sel('s_neer','Test di Neer','Paziente seduto, braccio rilassato lungo il fianco. Il fisioterapista, dietro di lui, con una mano stabilizza la scapola premendo verso il basso sull’acromion; con l’altra porta passivamente il braccio, ruotato internamente (pollice verso il basso), in flessione anteriore fino al massimo. Positivo se compare dolore nella parte antero-laterale della spalla, di solito nell’ultima parte del movimento. Evidenzia sofferenza del sovraspinato (e della borsa sottoacromiale) compressi sotto l’acromion.',PROV,{ref:'Negativo (indaga il sovraspinato)',prov:true}),
+    sel('s_hk','Test di Hawkins-Kennedy','Paziente seduto o in piedi. Il fisioterapista porta il braccio in flessione anteriore a 90° con il gomito flesso a 90°, sostenendo il gomito; poi ruota internamente la spalla in modo passivo abbassando l’avambraccio. Positivo se compare dolore antero-laterale durante la rotazione interna. Evidenzia sofferenza del sovraspinato (e della borsa sottoacromiale) compressi contro il legamento coraco-acromiale.',PROV,{ref:'Negativo (indaga il sovraspinato)',prov:true}),
+    sel('s_jobe','Test di Jobe (empty can)','Paziente in piedi o seduto, braccia elevate a 90° nel piano della scapola (circa 30° in avanti rispetto al piano frontale), gomiti estesi, pollici rivolti verso il basso (“lattina vuota”). Il fisioterapista spinge verso il basso sugli avambracci distali mentre il paziente resiste; si confrontano i due lati. Positivo se compare dolore (annota nelle note anche l’eventuale debolezza). Evidenzia sofferenza del sovraspinato.',PROV,{ref:'Negativo (indaga il sovraspinato)',prov:true})
   ]}
  ]},
  {id:'anca', name:'3 · Anca', sections:[
   {title:'A — Range di movimento (ROM)', rows:[
     rom('a_flex','Flessione','Supino. Device sulla faccia laterale della coscia, a metà fra anca e ginocchio. Azzerare con arto disteso sul lettino.',120),
-    rom('a_abd','Abduzione','Supino, di fronte all’operatore. Device sulla faccia anteriore della coscia distale. Azzerare con arti paralleli.',45),
-    rom('a_ir','Rotazione interna','Seduto a bordo lettino, ginocchio flesso 90°, tibia verticale. Device sulla faccia anteriore della tibia distale. Azzerare con tibia verticale.',45),
-    rom('a_er','Rotazione esterna','Stessa posizione e stesso punto, movimento in direzione opposta.',45)
+    rom('a_abd','Abduzione','Decubito laterale sul lato opposto, arto sottostante flesso per stabilità, arto testato esteso in linea con il tronco. Device sulla faccia laterale della coscia distale. Azzerare con l’arto in linea con il tronco. Sollevare senza ruotare il bacino e senza flettere l’anca.',45),
+    rom('a_ir','Rotazione interna','Supino, anca e ginocchio flessi a 90° (coscia verticale, sostenuta dall’operatore), bacino stabilizzato. Device sulla tibia distale. Rotazione interna = il piede si sposta verso l’esterno.',45),
+    rom('a_er','Rotazione esterna','Stessa posizione e stesso punto. Rotazione esterna = il piede si sposta verso l’interno.',45)
   ]},
-  {title:'B — Forza isometrica (make test)', note:'Gli abduttori (gluteo medio) sono il parametro più rilevante per il rischio caduta over-65.', rows:[
+  {title:'B — Forza isometrica (make test)', note:GATE_MOB+' Gli abduttori (gluteo medio) sono il parametro più rilevante per il rischio caduta over-65.', rows:[
     frc('a_fabd','Abduttori (gluteo medio)','Decubito laterale, anca neutra, cuscinetto laterale prossimale al ginocchio.'),
-    frc('a_ffl','Flessori (ileopsoas)','Seduto, anca flessa 90°, cuscinetto anteriore coscia distale.'),
+    frc('a_ffl','Flessori (ileopsoas)','In piedi (mano al muro per l’equilibrio) oppure supino: anca flessa a 90°, cuscinetto anteriore sulla coscia distale. Non da seduti: si tende a compensare con gli addominali e la retroversione del bacino.'),
     frc('a_fex','Estensori (grande gluteo)','Prono, cuscinetto posteriore coscia prossimale al ginocchio.'),
     frc('a_lp','Pressa orizzontale (catena estensoria)','Seduto alla leg press, anca e ginocchio a 90°, cuscinetto sotto la pianta del piede sulla pedana. Il valore assoluto non è confrontabile con i test isolati: si legge come Dx/Sx e andamento nel tempo.')
   ]},
-  {title:'C — Test funzionale: single-leg stance + passo', note:'Osservazione qualitativa del passo (antalgico, Trendelenburg, ridotta fase di appoggio). Sostituisce il test provocativo FABER, non pertinente allo scope of practice.', rows:[
+  {title:'C — Test funzionale: single-leg stance + passo', note:'Osservazione qualitativa del passo (antalgico, Trendelenburg, ridotta fase di appoggio).', rows:[
     numb('a_sls','Single-leg stance (tempo, max 30 s)','Occhi aperti, mani sui fianchi; si ferma a 30 s o se tocca/appoggia.','s',{ref:'60-69 a: ~27 s · 70-79: ~17 s · 80+: ~9 s · <5 s = rischio caduta',max:30,sls:true}),
     sel('a_tren','Segno di Trendelenburg','Osservare il bacino durante l’appoggio.',['—','Negativo (bacino stabile)','Positivo'],{ref:'Negativo'})
   ]}
  ]},
  {id:'caviglia', name:'4 · Caviglia-Piede', sections:[
   {title:'A — Range di movimento (ROM)', rows:[
-    rom('c_df','Flessione dorsale','Seduto, ginocchio flesso 90°, piede libero. Device sulla pianta del piede (o sul dorso). Azzerare a piede neutro, 90° sulla tibia. Sotto 15° = limitazione rilevante.',20,{minWarn:15}),
-    rom('c_pf','Flessione plantare','Stessa posizione e stesso punto, movimento in direzione opposta.',50)
+    numb('c_df','Flessione dorsale in carico (half-kneeling)','Half-kneeling, piede testato davanti. Il cliente porta il ginocchio in avanti oltre le dita mantenendo il tallone a terra (catena chiusa), fino al massimo. Device sulla cresta tibiale, appena sotto la tuberosità: si legge l’inclinazione della tibia rispetto alla verticale.','°',{ref:'Confronto Dx/Sx e nel tempo',ydiff:5,ydiffUnit:'°'}),
+    rom('c_pf','Flessione plantare','Seduto, ginocchio flesso 90°, piede libero. Device sul dorso del piede. Azzerare a piede neutro, 90° sulla tibia.',50)
   ]},
   {title:'B — Forza isometrica (make test)', rows:[
-    frc('c_fpf','Flessori plantari','Seduto, ginocchio flesso 90°, cuscinetto plantare sull’avampiede.'),
-    frc('c_fdf','Flessori dorsali','Seduto, ginocchio esteso, cuscinetto dorso del piede.'),
-    frc('c_fev','Eversori (peronei)','Seduto, piede neutro, cuscinetto bordo laterale del piede.')
+    frc('c_fdf','Flessori dorsali','Seduto, ginocchio esteso, cuscinetto dorso del piede.')
   ]},
-  {title:'C — Test funzionali: Y-balance + heel raise', note:'Composite = (somma delle 3 direzioni ÷ (3 × lunghezza arto)) × 100; lunghezza arto dalla SIAS al malleolo mediale. Soglie derivate da atleti: nei non atleti e over-65 usare il test come confronto Dx/Sx e pre/post sullo stesso individuo. Nei molto anziani è più informativo il single-leg stance (anca).', rows:[
+  {title:'C — Test funzionali: heel raise + Y-balance', note:'Heel raise al posto della forza dei flessori plantari. Y-balance (spento di default): serve una strumentazione per standardizzarlo. Composite = (somma delle 3 direzioni ÷ (3 × lunghezza arto)) × 100; lunghezza arto dalla SIAS al malleolo mediale. Soglie derivate da atleti.', rows:[
+    numb('c_hr','Heel raise test (n. ripetizioni)','Appoggio monopodalico, avampiede sul cuneo inclinato di 10°, un’alzata ogni 2 s (metronomo), fino a interruzione.','rip',{ref:'Mediana adulti: ♂ 24 · ♀ 21 · giovani ~29 · over 60 ~12'}),
     numb('y_len','Lunghezza arto (SIAS → malleolo mediale)','Serve per il composite score.','cm',{ref:'—'}),
     numb('y_ant','Y-balance · anteriore','Appoggio monopodalico al centro della stella; 4-6 prove di familiarizzazione, poi 3 prove valide per direzione: si registra la massima.','cm',{ref:'Diff. Dx/Sx < 4 cm',ydiff:4}),
     numb('y_pm','Y-balance · postero-mediale','','cm',{ref:'Diff. Dx/Sx < 6 cm',ydiff:6}),
     numb('y_pl','Y-balance · postero-laterale','','cm',{ref:'Diff. Dx/Sx < 6 cm',ydiff:6}),
-    {id:'y_comp',kind:'derived',name:'Composite score (% lunghezza arto)',cat:'func',ref:'Atleti: ≥ 94%',fn:(V)=>({dx:comp(V,'dx'),sx:comp(V,'sx')}),comp:true},
-    numb('c_hr','Heel raise test (n. ripetizioni)','Appoggio monopodalico, avampiede sul cuneo inclinato di 10°, un’alzata ogni 2 s (metronomo), fino a interruzione.','rip',{ref:'Mediana adulti: ♂ 24 · ♀ 21 · giovani ~29 · over 60 ~12'})
+    {id:'y_comp',kind:'derived',name:'Composite score (% lunghezza arto)',cat:'func',ref:'Atleti: ≥ 94%',fn:(V)=>({dx:comp(V,'dx'),sx:comp(V,'sx')}),comp:true}
   ]}
  ]},
  {id:'cervicale', name:'5 · Cervicale', sections:[
   {title:'A — Range di movimento (ROM)', note:'Dopo i 60 anni una riduzione del 20-30% rispetto ai valori AAOS è comune e non necessariamente patologica. Valuta soprattutto la simmetria tra i lati e la variazione nel tempo dello stesso soggetto.', rows:[
     rom('k_lat','Flessione laterale','Seduto. Device sulla sommità del capo, ruotato di 90° (orientamento destra-sinistra). Azzerare in neutro. Orecchio verso la spalla, un lato per volta.',45),
-    rom('k_rot','Rotazione','SUPINO, capo appoggiato al lettino. Device al centro della fronte. Azzerare a viso rivolto al soffitto. Mento verso la spalla, un lato per volta.',60)
-  ]},
-  {title:'B — Forza isometrica (make test)', note:'3 prove, si registra il massimo. Test a valore unico: si legge come andamento nel tempo dello stesso soggetto.', rows:[
-    numf('k_fext','Estensione cervicale','Seduto, cuscinetto dietro la nuca appoggiato al muro. Il soggetto spinge verso il muro retroponendo la nuca.','kg',{ref:'Confronto pre/post'})
+    numb('k_rotm','Rotazione con marker sulle braccia','Setup in definizione.','°',{ref:'In definizione'})
   ]}
  ]},
- {id:'rachide', name:'6 · Rachide dorso-lombare / Core', sections:[
-  {title:'A — Mobilità lombare: Schober', note:'Il ROM del tronco in gradi non è incluso (servirebbero due inclinometri). Lo Schober misura la mobilità lombare in modo diretto. Segni sempre gli stessi reperi per poter confrontare i retest.', rows:[
-    numf('sch','Schober · distanza in flessione massima','Due segni sulla cute: uno 10 cm sopra e uno 5 cm sotto la giunzione L5-S1 (distanza iniziale 15 cm). Flessione massima del tronco, ginocchia estese: rimisura la distanza tra i due segni.','cm',{ref:'Atteso ≥ 20 cm (+5 cm)',min:0}),
-    {id:'sch_inc',kind:'derived',name:'Schober · incremento rispetto a 15 cm',cat:'func',ref:'+5 cm',fn:(V)=>{const x=n((V.sch||{}).val);return {val:x==null?'':sgn(x-15)+' cm'};},schober:true}
+ {id:'rachide', name:'6 · Lombare / Core', sections:[
+  {title:'A — Batteria di McGill (resistenza del tronco)', note:'Tempi di tenuta in secondi; si ferma quando la posizione non è più mantenuta. Si leggono soprattutto i rapporti tra i test, calcolati automaticamente (riferimenti di McGill su adulti sani).', rows:[
+    numf('mg_fl','Flessori del tronco (tenuta a 60°)','Seduto, anche e ginocchia flesse a 90°, piedi bloccati, braccia incrociate al petto, schiena appoggiata a un supporto inclinato a 60°. Si arretra il supporto di circa 10 cm e si tiene la posizione. Fine quando il tronco scende sotto i 60°.','s',{ref:'Vedi rapporti'}),
+    numf('mg_ext','Estensori (Biering-Sørensen)','Prono sul lettino con la cresta iliaca al bordo, bacino, anche e ginocchia fissati con cinghie, tronco fuori dal lettino, braccia incrociate al petto. Tenere il tronco orizzontale. Fine quando il tronco scende sotto l’orizzontale.','s',{ref:'Vedi rapporti'}),
+    numb('mg_sb','Side bridge (lato = appoggio)','Decubito laterale, gambe estese, piede superiore davanti all’inferiore, appoggio sul gomito, mano libera sulla spalla opposta. Sollevare il bacino con il corpo in linea retta. Fine quando il bacino torna a terra.','s',{ref:'Vedi rapporti'}),
+    {id:'mg_r',kind:'derived',name:'Rapporti McGill',cat:'func',ref:'Fless./Est. < 1,0 · SB Dx/Sx 0,95–1,05 · SB/Est. < 0,75',fn:(V)=>mcgill(V).txt,mcgill:true}
   ]},
-  {title:'B — Simmetria posturale: triangolo della taglia', note:'Valutazione solo qualitativa (soggetto in piedi, arti rilassati): non si misura in cm. Un’asimmetria evidente è un rilievo di screening da segnalare e, se marcato o di nuova comparsa, da rimandare al medico.', rows:[
-    sel('tri','Simmetria dei due triangoli (spazio braccio-fianco)','',['—','Simmetrici','Asimmetrici · Dx più ampio','Asimmetrici · Sx più ampio'],{bi:false,ref:'Simmetrici'})
-  ]},
-  {title:'C — Plank test', note:'Riferimenti di uso comune, non normative AAOS: da personalizzare per età, peso, livello. Il confronto pre/post sullo stesso soggetto è il dato più affidabile.', rows:[
-    numf('pl_t','Tempo di tenuta con allineamento corretto','','s',{ref:'Adulti sani: ♂ ≥ 60 s · ♀ ≥ 45 s · over-65 ≥ 30 s',plank:true})
+  {title:'B — Torsione del busto (dinamometro)', note:'Setup in definizione: finché il protocollo non è fissato, i valori di valutazioni diverse non sono confrontabili.', rows:[
+    frc('l_tor','Torsione del busto da seduto (lato = verso di rotazione)','Setup in definizione.')
   ]}
  ]},
  {id:'gomito', name:'7 · Gomito-Polso-Mano', sections:[
@@ -257,11 +255,28 @@ const DISTRICTS = [
     numf('berg','Berg Balance Scale (punteggio /56)','14 compiti di equilibrio statico e dinamico (0–4 ciascuno). Servono sedia con e senza braccioli, sgabello, righello, cronometro; 15-20 min.','/56',{ref:'41-56 autonomo · 21-40 con assistenza · <45 rischio caduta aumentato',max:56,berg:true}),
     numf('tug','Timed Up and Go — TUG','3 m a passo normale e sicuro; una prova di familiarizzazione. Il cronometro parte al comando e si ferma quando il soggetto è seduto con la schiena appoggiata.','s',{ref:'<10 s normale · ≥12 s rischio aumentato · >30 s mobilità gravemente compromessa',tug:true})
   ]},
+  {title:'Equilibrio sensoriale: mCTSIB', note:'In piedi, piedi uniti, braccia incrociate al petto, 30 s per condizione. Si ferma il tempo se il cliente apre gli occhi (nelle condizioni a occhi chiusi), sposta i piedi o usa le braccia. Max 30 s per condizione, totale su 120.', rows:[
+    numf('ct1','mCTSIB 1 · pavimento, occhi aperti','','s',{ref:'30 s',max:30,ct:true}),
+    numf('ct2','mCTSIB 2 · pavimento, occhi chiusi','','s',{ref:'30 s',max:30,ct:true}),
+    numf('ct3','mCTSIB 3 · Airex, occhi aperti','','s',{ref:'30 s',max:30,ct:true}),
+    numf('ct4','mCTSIB 4 · Airex, occhi chiusi','La condizione più impegnativa: si appoggia quasi solo sul sistema vestibolare.','s',{ref:'30 s',max:30,ct:true}),
+    {id:'ct_tot',kind:'derived',name:'mCTSIB · totale',cat:'func',ref:'120/120',fn:(V)=>{ const xs=['ct1','ct2','ct3','ct4'].map(k=>n((V[k]||{}).val)); if(xs.every(x=>x==null)) return {val:''}; const done=xs.filter(x=>x!=null); return {val:done.reduce((a,b)=>a+b,0).toFixed(0)+'/'+(done.length*30)+(done.length<4?' (parziale)':'')}; }}
+  ]},
   {title:'Transfer e forza arti inferiori', rows:[
     numf('cs30','30-Second Chair Stand (n. ripetizioni)','Sedia senza braccioli, seduta 43 cm, appoggiata al muro. Braccia incrociate al petto; ripetizioni complete in 30 s. Se allo scadere si è oltre metà salita, l’alzata conta. Variazione ≥ 2 rip. = clinicamente significativa.','rip',{ref:'Fascia “nella media” per sesso/età (Jones & Rikli, 2002)',cs30:true})
   ]},
   {title:'Mobilità / flessibilità', rows:[
     numf('csr','Chair Sit-and-Reach (cm, + o −)','Sul bordo di una sedia (~44 cm) appoggiata al muro, un piede a terra e l’altro arto esteso, tallone a terra. Misura la distanza dito medio–punta della scarpa: negativo se non la raggiunge, positivo se la supera. 2 prove sull’arto preferito, si registra la migliore.','cm',{neg:true,ref:'Mediana 60-64 a: ♂ +1,5 · ♀ +5 cm'})
+  ]}
+ ]},
+ {id:'funzionali', name:'9 · Test funzionali (0-3)', sections:[
+  {title:'Punteggio stile FMS', note:'3 = esecuzione corretta · 2 = esecuzione con compensi · 1 = non riesce a eseguire il movimento · 0 = dolore durante il test (in quel caso non si assegna altro punteggio: approfondire). Nei test bilaterali il punteggio che entra nel totale è quello del lato peggiore.', rows:[
+    fms('f_sq','Squat profondo','Piedi alla larghezza delle spalle, bastone sopra la testa con braccia tese (gomiti a 90° sul bastone appoggiato in testa per prendere la presa). Scendere il più in basso possibile. 3 = tronco parallelo alla tibia o più verticale, femori sotto l’orizzontale, ginocchia allineate ai piedi, bastone sopra i piedi · 2 = criteri raggiunti solo con i talloni rialzati (tavoletta di ~5 cm) · 1 = criteri non raggiunti nemmeno con i talloni rialzati.',false),
+    fms('f_so','Step over (lato = gamba che scavalca)','Ostacolo all’altezza della tuberosità tibiale, piedi uniti dietro l’ostacolo, bastone sulle spalle. Scavalcare toccando a terra con il tallone e tornare. 3 = anca, ginocchio e caviglia allineati, colonna stabile, bastone parallelo all’ostacolo · 2 = perdita di allineamento, movimento lombare o bastone inclinato · 1 = contatto con l’ostacolo o perdita di equilibrio.',true),
+    fms('f_lu','Affondo (lato = gamba avanti)','Distanza tra i piedi = lunghezza della tibia (pavimento → tuberosità tibiale), piedi sulla stessa linea. Bastone dietro la schiena a contatto con testa, dorso e sacro. Scendere fino a toccare con il ginocchio posteriore dietro il tallone anteriore. 3 = contatti del bastone mantenuti, bastone verticale, tronco fermo, ginocchio tocca · 2 = contatti persi, bastone non verticale o tronco che si muove · 1 = perdita di equilibrio.',true),
+    sel('f_pu_v','Push-up: variante','',['—','Standard','Sulle ginocchia'],{bi:false,ref:'—'}),
+    fms('f_pu','Push-up (stabilità del tronco)','Prono, mani alla larghezza delle spalle, corpo rigido. Sollevarsi in un unico blocco, senza che il bacino resti indietro o la schiena si inarchi. 3 = esecuzione in blocco · 2 = esecuzione con compensi (bacino che ritarda, lordosi) · 1 = non riesce. Indica sopra la variante usata: nelle rivalutazioni usare la stessa.',false),
+    {id:'f_tot',kind:'derived',name:'Totale test funzionali',cat:'func',ref:'12/12',fn:(V)=>{ const ts=[['f_sq',false],['f_so',true],['f_lu',true],['f_pu',false]]; const xs=ts.map(([id,bi])=>fmsScore(V,id,bi)); const done=xs.filter(x=>x!=null); if(!done.length) return {val:''}; return {val:done.reduce((a,b)=>a+b,0)+'/'+(done.length*3)+(done.length<4?' (parziale)':'')}; }}
   ]}
  ]}
 ];
@@ -278,6 +293,14 @@ function comp(V, side){
 }
 
 /* ---------- interpretazione automatica ---------- */
+function mcgill(V){
+  const fl=n((V.mg_fl||{}).val), ex=n((V.mg_ext||{}).val), sd=n((V.mg_sb||{}).dx), ss=n((V.mg_sb||{}).sx);
+  const parts=[], flags=[]; const f2=x=>x.toFixed(2).replace('.',',');
+  if(fl!=null&&ex>0){ const r=fl/ex; parts.push('Fless./Est. '+f2(r)); flags.push({cls:r<1?'ok':'warn',txt:'Flessori/Estensori '+f2(r)+(r<1?' (< 1,0)':' (≥ 1,0: estensori relativamente deboli)')}); }
+  if(sd!=null&&ss>0){ const r=sd/ss; parts.push('SB Dx/Sx '+f2(r)); const ok=r>=0.95&&r<=1.05; flags.push({cls:ok?'ok':'warn',txt:'Side bridge Dx/Sx '+f2(r)+(ok?' (simmetrico)':' (asimmetria > 5%)')}); }
+  if(ex>0){ [['Dx',sd],['Sx',ss]].forEach(([l,x])=>{ if(x==null) return; const r=x/ex; parts.push('SB '+l+'/Est. '+f2(r)); flags.push({cls:r<0.75?'ok':'warn',txt:'Side bridge '+l+'/Estensori '+f2(r)+(r<0.75?' (< 0,75)':' (≥ 0,75)')}); }); }
+  return {txt:{val:parts.length?'vedi esito':''}, flags};
+}
 function lsiFlag(v, aff){
   const a=n(v.dx), b=n(v.sx); if(a==null||b==null) return null;
   let pct, txt;
@@ -304,6 +327,7 @@ function analyze(r, V, ctx){
   const out={flags:[], der:null};
   if(r.kind==='derived'){
     const d=r.fn(V, ctx); out.der=d;
+    if(r.mcgill) out.flags=mcgill(V).flags;
     if(r.comp){
       ['dx','sx'].forEach(s=>{ const p=parseFloat(d[s]); if(!isNaN(p)) out.flags.push({cls:p>=94?'ok':'', txt:(s==='dx'?'Dx ':'Sx ')+(p>=94?'≥ 94% (soglia atleti)':'< 94%: soglia valida solo per atleti')}); });
     }
@@ -311,8 +335,12 @@ function analyze(r, V, ctx){
   }
   if(r.cat==='rom'){ const f=romFlag(r,v); if(f) out.flags.push(f); }
   if(r.cat==='force'){ const f=lsiFlag(v,affOf(ctx,r.id)); if(f) out.flags.push(f); }
+  if(r.gate){ const g=V[r.gate.id]||{}; ['dx','sx'].forEach(sd=>{ const x=n(g[sd]); if(x!=null&&x<r.gate.min) out.flags.push({cls:'warn',txt:(sd==='dx'?'Dx':'Sx')+': mobilità < '+r.gate.min+'°, test non eseguibile · valutare solo la mobilità'}); }); }
+  if(r.fms){ const vals=r.bi?[['Dx ',v.dx],['Sx ',v.sx]]:[['',v.val]]; vals.forEach(([l,x])=>{ if(!x) return; if(/^0/.test(x)) out.flags.push({cls:'bad',txt:l+'dolore durante il test: approfondire'}); else if(x==='1') out.flags.push({cls:'warn',txt:l+'non riesce a eseguire il movimento'}); else if(x==='2') out.flags.push({cls:'warn',txt:l+'esecuzione con compensi'}); });
+    if(r.bi&&v.dx&&v.sx&&v.dx!==v.sx) out.flags.push({cls:'warn',txt:'Asimmetria Dx/Sx'}); }
+  if(r.ct){ const x=n(v.val); if(x!=null&&x<30) out.flags.push({cls:'warn',txt:'Non completato (< 30 s)'}); }
   if(r.id==='sl_n'){ ['dx','sx'].forEach(s=>{ const x=n(v[s]); if(x!=null&&x<5) out.flags.push({cls:'warn',txt:(s==='dx'?'Dx ':'Sx ')+x+'/5 corretti'}); }); }
-  if(r.ydiff){ const a=n(v.dx), b=n(v.sx); if(a!=null&&b!=null){ const d=Math.abs(a-b); out.flags.push({cls:d>=r.ydiff?'warn':'ok', txt:'Differenza Dx/Sx '+d.toFixed(1)+' cm'+(d>=r.ydiff?' (≥ '+r.ydiff+' cm)':'')}); } }
+  if(r.ydiff){ const a=n(v.dx), b=n(v.sx); if(a!=null&&b!=null){ const d=Math.abs(a-b); out.flags.push({cls:d>=r.ydiff?'warn':'ok', txt:'Differenza Dx/Sx '+d.toFixed(1)+(r.ydiffUnit||' cm')+(d>=r.ydiff?' (≥ '+r.ydiff+(r.ydiffUnit||' cm')+')':'')}); } }
   if(r.vert && v.dx && v.sx){ const i=VERT.indexOf(v.dx), j=VERT.indexOf(v.sx); if(i>0&&j>0){ const d=Math.abs(i-j); out.flags.push({cls:d>2?'warn':'ok', txt:'Differenza Dx/Sx: '+d+(d===1?' livello':' livelli')}); } }
   if(r.prov){ ['dx','sx'].forEach(sd=>{ if(/^Positivo/.test(v[sd]||'')) out.flags.push({cls:'bad',txt:(sd==='dx'?'Dx':'Sx')+' positivo: dolore presente'+(r.provTxt?' · '+r.provTxt:'')}); }); }
   if(r.sls){
@@ -368,7 +396,7 @@ function buildModel(ev){
   const head=hasPrev?['Test','Dx / Valore','Sx','Precedente ('+prevDate+')','Atteso / Riferimento','Esito / note']:['Test','Dx / Valore','Sx','Atteso / Riferimento','Esito / note'];
   const P3=r=>hasPrev?[prevText(r,PV,ctx)]:[];
   const sexLab={M:'Maschio',F:'Femmina'}[ev.sex]||'—', AFF={dx:'Destro',sx:'Sinistro'};
-  const meta=[['Codice cliente',ev.code||'—'],['Data',fmtDate(ev.date)],['Professionista',ev.professional||'—'],['Sesso',sexLab],['Età',ev.age||'—'],['Dolore NRS (0-10)',ev.nrs===''||ev.nrs==null?'—':ev.nrs]];
+  const meta=[['Codice cliente',ev.code||'—'],['Data',fmtDate(ev.date)],['Professionista',ev.professional||'—'],['Sesso',sexLab],['Età',ev.age||'—'],['Dolore VAS (0-10 cm)',ev.nrs===''||ev.nrs==null?'—':ev.nrs]];
   const districts=[];
   DISTRICTS.filter(d=>(ev.districts||[]).includes(d.id)).forEach(d=>{
     const sections=[];
@@ -430,8 +458,30 @@ function startNew(){ cur=newEval(); dirty=false; try{localStorage.removeItem(DRA
 function saveDraft(){ lsSet(DRAFT_KEY, JSON.stringify(cur)); }
 function setStatus(t){ const s=$('#status'); if(s) s.textContent=t; }
 
+async function printVas(btn){
+  const old=btn?btn.textContent:''; if(btn){btn.disabled=true;btn.textContent='Preparo…';}
+  try{
+    if(!window.jspdf) await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
+    const d=new window.jspdf.jsPDF({unit:'mm',format:'a4'}); const W=210, x0=55, x1=155;
+    d.setFillColor(46,78,107); d.rect(20,18,170,14,'F'); d.setTextColor(255); d.setFont('helvetica','bold'); d.setFontSize(15); d.text('Scala del dolore (VAS)',26,27.5);
+    d.setTextColor(40); d.setFont('helvetica','normal'); d.setFontSize(11);
+    d.text('Nome / codice: ______________________________     Data: ______________',20,46);
+    d.setFontSize(12); d.text(d.splitTextToSize('Pensi al dolore che sente in questo momento. Faccia un solo segno verticale sulla linea, nel punto che meglio descrive quanto è forte: più a sinistra = meno dolore, più a destra = più dolore.',170),20,60);
+    const y=95; d.setDrawColor(20); d.setLineWidth(0.6); d.line(x0,y,x1,y); d.line(x0,y-5,x0,y+5); d.line(x1,y-5,x1,y+5);
+    d.setFontSize(10); d.text('Nessun',x0,y+11,{align:'center'}); d.text('dolore',x0,y+15.5,{align:'center'});
+    d.text('Il peggior dolore',x1,y+11,{align:'center'}); d.text('immaginabile',x1,y+15.5,{align:'center'});
+    d.setFontSize(10); d.setTextColor(90); d.text('Spazio per eventuali indicazioni (dove fa male, quando aumenta):',20,135); d.setDrawColor(170); d.setLineWidth(0.2); [145,155,165].forEach(yy=>d.line(20,yy,190,yy));
+    d.setFillColor(238,242,247); d.rect(20,185,170,48,'F'); d.setTextColor(46,78,107); d.setFont('helvetica','bold'); d.setFontSize(11); d.text('Per l\'operatore',25,194);
+    d.setFont('helvetica','normal'); d.setTextColor(50); d.setFontSize(9.5);
+    d.text(d.splitTextToSize('La linea misura esattamente 10 cm. Con un righello misura in cm la distanza dall\'estremità sinistra al segno del cliente (es. 4,5 cm) e riportala nella scheda nel campo "Dolore attuale VAS". Spiega la scala al cliente la prima volta e usa sempre questa stessa scala nelle rivalutazioni (non alternarla con la scala numerica 0-10 detta a voce). Stampa al 100% (dimensione reale, senza "adatta alla pagina"): controlla con il righello che la linea sia di 10 cm.',160),25,201);
+    d.setFontSize(8); d.setTextColor(140); d.text('Verifica di stampa: questo segmento deve misurare 5 cm',20,250); d.setDrawColor(120); d.setLineWidth(0.4); d.line(20,254,70,254); d.line(20,252,20,256); d.line(70,252,70,256);
+    await offerDownload('Scala_VAS_dolore.pdf', d.output('blob'));
+  }catch(e){ alertMsg('Impossibile creare la scala VAS: '+(e&&e.message||'errore')); }
+  if(btn){btn.disabled=false;btn.textContent=old;}
+}
+function alertMsg(t){ const b=$('#dlgbody'); b.replaceChildren(el('p',{text:t})); $('#dlg').showModal(); }
 function renderHome(m){
-  m.append(el('div',{class:'card'}, el('h2',{text:'Nuova valutazione'}), el('p',{class:'meta',text:'Compila la scheda e alla fine scarica il PDF: è il referto da conservare (per esempio su Drive) e contiene anche i dati per riaprirla.'}), el('button',{class:'primary',text:'+ Nuova scheda',onclick:startNew})));
+  m.append(el('div',{class:'card'}, el('h2',{text:'Nuova valutazione'}), el('p',{class:'meta',text:'Compila la scheda e alla fine scarica il PDF: è il referto da conservare (per esempio su Drive) e contiene anche i dati per riaprirla.'}), el('div',{class:'chips'}, el('button',{class:'primary',text:'+ Nuova scheda',onclick:startNew}), el('button',{text:'🖨 Stampa scala VAS',onclick:e=>printVas(e.currentTarget)}))));
   const fi=el('input',{type:'file',accept:'application/pdf,.pdf,.json',style:'display:none'});
   fi.addEventListener('change',()=>{ const f=fi.files&&fi.files[0]; fi.value=''; if(f) loadFile(f); });
   const msg=el('p',{class:'meta',id:'loadmsg'});
@@ -474,8 +524,8 @@ function chooseLoad(data){
 }
 
 /* ---------- personalizzazione batteria ---------- */
-const HID_KEY='val_hidden'; let hidden=new Set(), cfgTimer=null;
-try{ const h=localStorage.getItem(HID_KEY); if(h) hidden=new Set(JSON.parse(h)); }catch(e){}
+const HID_KEY='val_hidden_v2', DEFAULT_OFF=['s_er','y_len','y_ant','y_pm','y_pl','y_comp']; let hidden=new Set(DEFAULT_OFF), cfgTimer=null;
+try{ const h=localStorage.getItem(HID_KEY); if(h) hidden=new Set(JSON.parse(h)); else { const old=localStorage.getItem('val_hidden'); if(old) JSON.parse(old).forEach(x=>hidden.add(x)); localStorage.setItem(HID_KEY,JSON.stringify([...hidden])); } }catch(e){}
 const isOn = r => !hidden.has(r.id);
 const visRows = d => d.sections.reduce((a,s)=>a.concat(s.rows.filter(isOn)),[]);
 function persistHidden(){
@@ -520,11 +570,11 @@ function renderForm(m){
   const studio=bind(el('input',{type:'text',placeholder:'Nome palestra / studio',value:cur.studio}),'studio');
   const sex=el('select',null, el('option',{value:'',text:'—'}), el('option',{value:'M',text:'Maschio'}), el('option',{value:'F',text:'Femmina'})); sex.value=cur.sex; bind(sex,'sex','change');
   const age=bind(el('input',{type:'number',inputmode:'numeric',min:0,max:120,placeholder:'anni',value:cur.age}),'age');
-  const nrs=bind(el('input',{type:'number',min:0,max:10,step:1,inputmode:'numeric',placeholder:'0–10',value:cur.nrs}),'nrs');
+  const nrs=bind(el('input',{type:'number',min:0,max:10,step:0.1,inputmode:'decimal',placeholder:'cm misurati, es. 4,5',value:cur.nrs}),'nrs');
   const motivo=el('textarea',{placeholder:'Motivo dell’accesso, patologia/intervento e data, limitazioni, obiettivi, segnalazioni…'}); motivo.value=cur.motivo; bind(motivo,'motivo');
   if(cur.prev) m.append(el('div',{class:'info',text:'🔁 Rivalutazione: sotto ogni test trovi il valore della scheda del '+fmtDate(cur.prev.date)+'. Il PDF includerà la colonna di confronto.'}));
   m.append(el('div',{class:'card'}, el('h2',{text:'Cliente'}),
-    el('div',{class:'grid'}, field('Codice cliente',code), field('Data',date), field('Professionista',prof), field('Palestra / studio',studio), field('Sesso',sex), field('Età',age), field('Dolore attuale NRS',nrs)),
+    el('div',{class:'grid'}, field('Codice cliente',code), field('Data',date), field('Professionista',prof), field('Palestra / studio',studio), field('Sesso',sex), field('Età',age), field('Dolore attuale VAS (0-10 cm)',nrs)),
     el('div',{style:'margin-top:10px'}, field('Anamnesi / motivo di accesso',motivo))));
 
   const chipsBox=el('div',{class:'chips'}), testsBox=el('div');
@@ -600,8 +650,8 @@ function rowBlock(r, touch, onHide){
       inp=el('select',null, ...r.opts.map(o=>el('option',{value:o==='—'?'':o,text:o}))); inp.value=v[key]||'';
       inp.addEventListener('change',()=>{ v[key]=inp.value; touch(); });
     } else {
-      const props={type:'number',step:'any',placeholder:r.unit||'',value:v[key]!=null?v[key]:''};
-      if(!r.neg) props.inputmode='decimal'; if(r.max!=null) props.max=r.max; if(r.min!=null) props.min=r.min;
+      const props=r.kind==='txt'?{type:'text',placeholder:r.ph||'',value:v[key]!=null?v[key]:''}:{type:'number',step:'any',placeholder:r.unit||'',value:v[key]!=null?v[key]:''};
+      if(!r.neg&&r.kind!=='txt') props.inputmode='decimal'; if(r.max!=null) props.max=r.max; if(r.min!=null) props.min=r.min;
       inp=el('input',props);
       inp.addEventListener('input',()=>{ v[key]=inp.value; touch(); });
       inp.addEventListener('focus',()=>{ lastField={inp,r}; });
