@@ -151,7 +151,7 @@ const DISTRICTS = [
  {id:'ginocchio', name:'1 · Ginocchio', sections:[
   {title:'A — Range di movimento (ROM)', note:'Per l’estensione scrivi i gradi misurati: −10 = il ginocchio resta flesso di 10°.', rows:[
     rom('g_flex','Flessione ginocchio','Prono. Device sulla faccia laterale della tibia, a 20 cm dal polo inferiore della rotula (misurare con il metro). Azzerare a ginocchio esteso.',135),
-    rom('g_ext','Estensione ginocchio','Seduto sul box, gamba libera a penzoloni. Device sulla faccia laterale della tibia, a 20 cm dal polo inferiore della rotula. Azzerare a gamba flessa (tibia verticale), poi estendere il ginocchio e leggere i gradi raggiunti. Nessun valore atteso: il dato serve per il confronto fra i due arti e con i retest (più gradi = miglioramento). Mantenere la stessa posizione del busto a ogni valutazione.',null,{free:true,ref:'Confronto Dx/Sx e nel tempo'})
+    sel('g_ext','Estensione attiva di ginocchio (sollevamento del tallone)','Cliente seduto a terra o sul lettino con le gambe distese e la schiena appoggiata al muro. Chiedere di estendere al massimo il ginocchio (contrarre il quadricipite spingendo il ginocchio verso il basso) e sollevare il tallone dal piano. Sì = il tallone si stacca dal piano. No = il tallone resta appoggiato. Un arto alla volta.',['—','Sì','No'],{ref:'Sì (tallone sollevato)',heel:true})
   ]},
   {title:'B — Forza isometrica (make test)', note:'3 prove per lato, si registra il massimo. Il centro del cuscinetto va sempre a 20 cm dal polo inferiore della rotula (misurare con il metro), così nei retest il dinamometro è nello stesso punto. Se non è possibile rispettare i 20 cm, scrivere la distanza usata nelle note. Se entrambi gli arti sono deboli l’LSI può risultare accettabile: leggi sempre anche i kg assoluti.', rows:[
     frc('g_qf','Estensione (quadricipite)','Seduto, ginocchio flesso 90°, cuscinetto sulla faccia anteriore della tibia a 20 cm dal polo inferiore della rotula, cintura di ancoraggio.'),
@@ -342,6 +342,7 @@ function analyze(r, V, ctx){
   if(r.id==='sl_n'){ ['dx','sx'].forEach(s=>{ const x=n(v[s]); if(x!=null&&x<5) out.flags.push({cls:'warn',txt:(s==='dx'?'Dx ':'Sx ')+x+'/5 corretti'}); }); }
   if(r.ydiff){ const a=n(v.dx), b=n(v.sx); if(a!=null&&b!=null){ const d=Math.abs(a-b); out.flags.push({cls:d>=r.ydiff?'warn':'ok', txt:'Differenza Dx/Sx '+d.toFixed(1)+(r.ydiffUnit||' cm')+(d>=r.ydiff?' (≥ '+r.ydiff+(r.ydiffUnit||' cm')+')':'')}); } }
   if(r.vert && v.dx && v.sx){ const i=VERT.indexOf(v.dx), j=VERT.indexOf(v.sx); if(i>0&&j>0){ const d=Math.abs(i-j); out.flags.push({cls:d>2?'warn':'ok', txt:'Differenza Dx/Sx: '+d+(d===1?' livello':' livelli')}); } }
+  if(r.heel){ ['dx','sx'].forEach(sd=>{ const l=sd==='dx'?'Dx':'Sx'; if(v[sd]==='No') out.flags.push({cls:'warn',txt:l+': non solleva il tallone · estensione attiva incompleta'}); else if(v[sd]==='Sì') out.flags.push({cls:'ok',txt:l+': tallone sollevato · estensione attiva completa'}); }); }
   if(r.prov){ ['dx','sx'].forEach(sd=>{ if(/^Positivo/.test(v[sd]||'')) out.flags.push({cls:'bad',txt:(sd==='dx'?'Dx':'Sx')+' positivo: dolore presente'+(r.provTxt?' · '+r.provTxt:'')}); }); }
   if(r.sls){
     ['dx','sx'].forEach(s=>{
@@ -450,9 +451,9 @@ function today(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMon
 function fmtDate(s){ if(!s) return '—'; const [y,m,d]=s.split('-'); return d+'/'+m+'/'+y; }
 function lsGet(k){ try{return localStorage.getItem(k);}catch(e){return null;} }
 function lsSet(k,v){ try{localStorage.setItem(k,v);}catch(e){} }
-function newEval(){ return {id:'v'+Date.now().toString(36)+Math.random().toString(36).slice(2,5), code:'', date:today(), professional:'', studio:lsGet(STUDIO_KEY)||'', sex:'', age:'', aff:'', affD:{}, motivo:'', nrs:'', districts:[], values:{}, notes:{}, gx:1, updated:0}; }
-// Schede salvate prima del 14/11/2026: estensione ginocchio misurata da 0° (deficit negativo) → convertita nella nuova scala (90° = estensione completa)
-function migrate(d){ if(!d||d.gx) return d; const f=vs=>{ const g=vs&&vs.g_ext; if(g) ['dx','sx'].forEach(k=>{ const x=parseFloat(String(g[k]).replace(',','.')); if(g[k]!==''&&g[k]!=null&&!isNaN(x)) g[k]=String(90+x); }); }; f(d.values); if(d.prev) f(d.prev.values); d.gx=1; return d; }
+function newEval(){ return {id:'v'+Date.now().toString(36)+Math.random().toString(36).slice(2,5), code:'', date:today(), professional:'', studio:lsGet(STUDIO_KEY)||'', sex:'', age:'', aff:'', affD:{}, motivo:'', nrs:'', districts:[], values:{}, notes:{}, gx:2, updated:0}; }
+// Schede salvate quando l’estensione di ginocchio era in gradi: il vecchio valore non è confrontabile con il test Sì/No e viene scartato
+function migrate(d){ if(!d||d.gx>=2) return d; const f=vs=>{ const g=vs&&vs.g_ext; if(g) ['dx','sx'].forEach(k=>{ if(g[k]!=='Sì'&&g[k]!=='No') delete g[k]; }); }; f(d.values); if(d.prev) f(d.prev.values); d.gx=2; return d; }
 
 function setView(v){ view=v; $('#navList').classList.toggle('active',v==='list'); $('#navNew').classList.toggle('active',v==='form'); $('#navSet').classList.toggle('active',v==='settings'); render(); }
 function render(){ const m=$('#main'); m.replaceChildren(); if(view==='list') renderHome(m); else if(view==='settings') renderSettings(m); else renderForm(m); }
