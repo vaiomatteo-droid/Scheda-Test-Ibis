@@ -151,7 +151,7 @@ const DISTRICTS = [
  {id:'ginocchio', name:'1 · Ginocchio', sections:[
   {title:'A — Range di movimento (ROM)', note:'Per l’estensione scrivi i gradi misurati: −10 = il ginocchio resta flesso di 10°.', rows:[
     rom('g_flex','Flessione ginocchio','Prono. Device sulla faccia laterale della tibia, a 20 cm dal polo inferiore della rotula (misurare con il metro). Azzerare a ginocchio esteso.',135),
-    rom('g_ext','Estensione ginocchio','Stessa posizione, device sempre a 20 cm dal polo inferiore della rotula. Si parte da ginocchio flesso e si misura quanto manca per tornare a 0°.',0,{neg:true,ext:true})
+    rom('g_ext','Estensione ginocchio','Seduto sul box, gamba libera a penzoloni. Device sulla faccia laterale della tibia, a 20 cm dal polo inferiore della rotula. Azzerare a gamba flessa (tibia verticale), poi estendere il ginocchio: 90° = estensione completa. Si legge quanto manca per arrivare a 90°.',90,{ext90:true})
   ]},
   {title:'B — Forza isometrica (make test)', note:'3 prove per lato, si registra il massimo. Il centro del cuscinetto va sempre a 20 cm dal polo inferiore della rotula (misurare con il metro), così nei retest il dinamometro è nello stesso punto. Se non è possibile rispettare i 20 cm, scrivere la distanza usata nelle note. Se entrambi gli arti sono deboli l’LSI può risultare accettabile: leggi sempre anche i kg assoluti.', rows:[
     frc('g_qf','Estensione (quadricipite)','Seduto, ginocchio flesso 90°, cuscinetto sulla faccia anteriore della tibia a 20 cm dal polo inferiore della rotula, cintura di ancoraggio.'),
@@ -313,7 +313,8 @@ function romFlag(r, v){
   ['dx','sx'].forEach(s=>{
     const x=n(v[s]); if(x==null) return;
     const lab=r.bi?(s==='dx'?'Dx ':'Sx '):'';
-    if(r.ext){ parts.push(lab+(x<0?'deficit '+(-x)+'°':(x>0?'iperestensione '+x+'°':'estensione completa'))); }
+    if(r.ext90){ parts.push(lab+(x<90?'mancano '+(90-x)+'° all’estensione completa':(x>90?'iperestensione '+(x-90)+'°':'estensione completa'))); }
+    else if(r.ext){ parts.push(lab+(x<0?'deficit '+(-x)+'°':(x>0?'iperestensione '+x+'°':'estensione completa'))); }
     else parts.push(lab+(x===r.exp?'come atteso':sgn(x-r.exp)+'° vs atteso'));
     if(r.minWarn!=null && x<r.minWarn) warn=true;
   });
@@ -449,7 +450,9 @@ function today(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMon
 function fmtDate(s){ if(!s) return '—'; const [y,m,d]=s.split('-'); return d+'/'+m+'/'+y; }
 function lsGet(k){ try{return localStorage.getItem(k);}catch(e){return null;} }
 function lsSet(k,v){ try{localStorage.setItem(k,v);}catch(e){} }
-function newEval(){ return {id:'v'+Date.now().toString(36)+Math.random().toString(36).slice(2,5), code:'', date:today(), professional:'', studio:lsGet(STUDIO_KEY)||'', sex:'', age:'', aff:'', affD:{}, motivo:'', nrs:'', districts:[], values:{}, notes:{}, updated:0}; }
+function newEval(){ return {id:'v'+Date.now().toString(36)+Math.random().toString(36).slice(2,5), code:'', date:today(), professional:'', studio:lsGet(STUDIO_KEY)||'', sex:'', age:'', aff:'', affD:{}, motivo:'', nrs:'', districts:[], values:{}, notes:{}, gx:1, updated:0}; }
+// Schede salvate prima del 14/11/2026: estensione ginocchio misurata da 0° (deficit negativo) → convertita nella nuova scala (90° = estensione completa)
+function migrate(d){ if(!d||d.gx) return d; const f=vs=>{ const g=vs&&vs.g_ext; if(g) ['dx','sx'].forEach(k=>{ const x=parseFloat(String(g[k]).replace(',','.')); if(g[k]!==''&&g[k]!=null&&!isNaN(x)) g[k]=String(90+x); }); }; f(d.values); if(d.prev) f(d.prev.values); d.gx=1; return d; }
 
 function setView(v){ view=v; $('#navList').classList.toggle('active',v==='list'); $('#navNew').classList.toggle('active',v==='form'); $('#navSet').classList.toggle('active',v==='settings'); render(); }
 function render(){ const m=$('#main'); m.replaceChildren(); if(view==='list') renderHome(m); else if(view==='settings') renderSettings(m); else renderForm(m); }
@@ -485,7 +488,7 @@ function renderHome(m){
   fi.addEventListener('change',()=>{ const f=fi.files&&fi.files[0]; fi.value=''; if(f) loadFile(f); });
   const msg=el('p',{class:'meta',id:'loadmsg'});
   m.append(el('div',{class:'card'}, el('h2',{text:'Riprendi una scheda'}), el('p',{class:'meta',text:'Carica il PDF di una scheda scaricata da questa pagina (anche da Drive): puoi modificarla oppure iniziare una rivalutazione con il confronto rispetto alla volta precedente.'}), fi, el('button',{text:'📂 Carica PDF della scheda',onclick:()=>fi.click()}), msg));
-  const s=lsGet(DRAFT_KEY); let dl=null; try{dl=s?JSON.parse(s):null;}catch(e){}
+  const s=lsGet(DRAFT_KEY); let dl=null; try{dl=s?migrate(JSON.parse(s)):null;}catch(e){}
   if(dl && (dl.code||Object.keys(dl.values||{}).length)) m.append(el('div',{class:'card'}, el('h2',{text:'Scheda in corso su questo dispositivo'}), el('p',{class:'meta',text:(dl.code||'senza codice')+' · '+fmtDate(dl.date)+(dl.prev?' · rivalutazione':'')}), el('div',{class:'chips'}, el('button',{class:'primary',text:'Riprendi',onclick:()=>{cur=Object.assign(newEval(),dl);dirty=true;setView('form');}}), el('button',{text:'Scarta',onclick:()=>{try{localStorage.removeItem(DRAFT_KEY);}catch(e){}render();}}))));
   m.append(el('div',{class:'info',text:'Privacy: questa pagina non invia dati online. Restano solo sul dispositivo (bozza) e nei file che scarichi. Usa comunque un codice cliente invece di nome e cognome.'}));
 }
@@ -506,6 +509,7 @@ async function loadFile(f){
       data=JSON.parse(b64dec(mm[1]));
     }
     if(!data||typeof data!=='object'||!data.values) throw new Error('File non riconosciuto.');
+    migrate(data);
     if(msg) msg.textContent='';
     chooseLoad(data);
   }catch(e){ if(msg) msg.textContent='⚠ '+(e&&e.message||'Errore di lettura'); }
