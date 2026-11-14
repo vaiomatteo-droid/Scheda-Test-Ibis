@@ -150,13 +150,12 @@ function fmsScore(V,id,bi){ const v=V[id]||{}; if(!bi) return fmsNum(v.val); con
 const DISTRICTS = [
  {id:'ginocchio', name:'1 · Ginocchio', sections:[
   {title:'A — Range di movimento (ROM)', note:'Per l’estensione scrivi i gradi misurati: −10 = il ginocchio resta flesso di 10°.', rows:[
-    rom('g_flex','Flessione ginocchio','Prono. Device sulla faccia laterale della tibia, a metà fra ginocchio e caviglia. Azzerare a ginocchio esteso.',135),
-    rom('g_ext','Estensione ginocchio','Stessa posizione e stesso punto. Si parte da ginocchio flesso e si misura quanto manca per tornare a 0°.',0,{neg:true,ext:true})
+    rom('g_flex','Flessione ginocchio','Prono. Device sulla faccia laterale della tibia, a 20 cm dal polo inferiore della rotula (misurare con il metro). Azzerare a ginocchio esteso.',135),
+    rom('g_ext','Estensione ginocchio','Stessa posizione, device sempre a 20 cm dal polo inferiore della rotula. Si parte da ginocchio flesso e si misura quanto manca per tornare a 0°.',0,{neg:true,ext:true})
   ]},
-  {title:'B — Forza isometrica (make test)', note:'3 prove per lato, si registra il massimo. Misura e riporta sempre la distanza del cuscinetto dalla rotula, così nei retest il dinamometro va nello stesso punto. Se entrambi gli arti sono deboli l’LSI può risultare accettabile: leggi sempre anche i kg assoluti.', rows:[
-    numb('g_dist','Distanza del cuscinetto dal polo inferiore della rotula','Misura con il metro dal polo inferiore della rotula al centro del cuscinetto. Usa la stessa distanza in tutte le valutazioni.','cm',{ref:'Uguale nei retest'}),
-    frc('g_qf','Estensione (quadricipite)','Seduto, ginocchio flesso 90°, cuscinetto su tibia distale anteriore, cintura di ancoraggio.'),
-    frc('g_ham','Flessione (ischiocrurali)','Prono, ginocchio flesso 90°, cuscinetto su tibia distale posteriore. Eseguire solo se la flessione raggiunge 90°: altrimenti valutare solo la mobilità (frequente nel post-operatorio).',{gate:{id:'g_flex',min:90}})
+  {title:'B — Forza isometrica (make test)', note:'3 prove per lato, si registra il massimo. Il centro del cuscinetto va sempre a 20 cm dal polo inferiore della rotula (misurare con il metro), così nei retest il dinamometro è nello stesso punto. Se non è possibile rispettare i 20 cm, scrivere la distanza usata nelle note. Se entrambi gli arti sono deboli l’LSI può risultare accettabile: leggi sempre anche i kg assoluti.', rows:[
+    frc('g_qf','Estensione (quadricipite)','Seduto, ginocchio flesso 90°, cuscinetto sulla faccia anteriore della tibia a 20 cm dal polo inferiore della rotula, cintura di ancoraggio.'),
+    frc('g_ham','Flessione (ischiocrurali)','Prono, ginocchio flesso 90°, cuscinetto sulla faccia posteriore della gamba a 20 cm dal polo inferiore della rotula. Eseguire solo se la flessione raggiunge 90°: altrimenti valutare solo la mobilità (frequente nel post-operatorio).',{gate:{id:'g_flex',min:90}})
   ]}
  ]},
  {id:'spalla', name:'2 · Spalla', sections:[
