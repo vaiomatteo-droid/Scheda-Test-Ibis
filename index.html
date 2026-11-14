@@ -151,7 +151,7 @@ const DISTRICTS = [
  {id:'ginocchio', name:'1 · Ginocchio', sections:[
   {title:'A — Range di movimento (ROM)', note:'Per l’estensione scrivi i gradi misurati: −10 = il ginocchio resta flesso di 10°.', rows:[
     rom('g_flex','Flessione ginocchio','Prono. Device sulla faccia laterale della tibia, a 20 cm dal polo inferiore della rotula (misurare con il metro). Azzerare a ginocchio esteso.',135),
-    rom('g_ext','Estensione ginocchio','Seduto sul box, gamba libera a penzoloni. Device sulla faccia laterale della tibia, a 20 cm dal polo inferiore della rotula. Azzerare a gamba flessa (tibia verticale), poi estendere il ginocchio: 90° = estensione completa. Si legge quanto manca per arrivare a 90°.',90,{ext90:true})
+    rom('g_ext','Estensione ginocchio','Seduto sul box, gamba libera a penzoloni. Device sulla faccia laterale della tibia, a 20 cm dal polo inferiore della rotula. Azzerare a gamba flessa (tibia verticale), poi estendere il ginocchio e leggere i gradi raggiunti. Nessun valore atteso: il dato serve per il confronto fra i due arti e con i retest (più gradi = miglioramento). Mantenere la stessa posizione del busto a ogni valutazione.',null,{free:true,ref:'Confronto Dx/Sx e nel tempo'})
   ]},
   {title:'B — Forza isometrica (make test)', note:'3 prove per lato, si registra il massimo. Il centro del cuscinetto va sempre a 20 cm dal polo inferiore della rotula (misurare con il metro), così nei retest il dinamometro è nello stesso punto. Se non è possibile rispettare i 20 cm, scrivere la distanza usata nelle note. Se entrambi gli arti sono deboli l’LSI può risultare accettabile: leggi sempre anche i kg assoluti.', rows:[
     frc('g_qf','Estensione (quadricipite)','Seduto, ginocchio flesso 90°, cuscinetto sulla faccia anteriore della tibia a 20 cm dal polo inferiore della rotula, cintura di ancoraggio.'),
@@ -308,13 +308,13 @@ function lsiFlag(v, aff){
   else { const hi=Math.max(a,b), lo=Math.min(a,b); if(hi<=0) return null; pct=lo/hi*100; txt='LSI '+pct.toFixed(0)+'% (lato più debole: '+(a===b?'—':(a<b?'Dx':'Sx'))+')'; }
   return {cls: pct>=90?'ok':'warn', txt: txt+(pct>=90?' · nella norma':' · sotto soglia 90%')};
 }
-function romFlag(r, v){
+function romFlag(r, v, prev){
+  if(r.free){ const a=n(v.dx), b=n(v.sx), parts=[]; if(a!=null&&b!=null) parts.push(a===b?'Dx e Sx uguali':'Differenza Dx/Sx '+Math.abs(a-b)+'° ('+(a<b?'Dx':'Sx')+' più limitato)'); if(prev) [['Dx','dx',a],['Sx','sx',b]].forEach(([l,k,x])=>{ const p=n(prev[k]); if(x!=null&&p!=null) parts.push(l+' '+(x===p?'invariato':sgn(x-p)+'°')+' rispetto alla volta precedente'); }); return parts.length?{cls:'',txt:parts.join(' · ')}:null; }
   const parts=[]; let warn=false;
   ['dx','sx'].forEach(s=>{
     const x=n(v[s]); if(x==null) return;
     const lab=r.bi?(s==='dx'?'Dx ':'Sx '):'';
-    if(r.ext90){ parts.push(lab+(x<90?'mancano '+(90-x)+'° all’estensione completa':(x>90?'iperestensione '+(x-90)+'°':'estensione completa'))); }
-    else if(r.ext){ parts.push(lab+(x<0?'deficit '+(-x)+'°':(x>0?'iperestensione '+x+'°':'estensione completa'))); }
+    if(r.ext){ parts.push(lab+(x<0?'deficit '+(-x)+'°':(x>0?'iperestensione '+x+'°':'estensione completa'))); }
     else parts.push(lab+(x===r.exp?'come atteso':sgn(x-r.exp)+'° vs atteso'));
     if(r.minWarn!=null && x<r.minWarn) warn=true;
   });
@@ -333,7 +333,7 @@ function analyze(r, V, ctx){
     }
     return out;
   }
-  if(r.cat==='rom'){ const f=romFlag(r,v); if(f) out.flags.push(f); }
+  if(r.cat==='rom'){ const f=romFlag(r,v,ctx&&ctx.prevV&&ctx.prevV[r.id]); if(f) out.flags.push(f); }
   if(r.cat==='force'){ const f=lsiFlag(v,affOf(ctx,r.id)); if(f) out.flags.push(f); }
   if(r.gate){ const g=V[r.gate.id]||{}; ['dx','sx'].forEach(sd=>{ const x=n(g[sd]); if(x!=null&&x<r.gate.min) out.flags.push({cls:'warn',txt:(sd==='dx'?'Dx':'Sx')+': mobilità < '+r.gate.min+'°, test non eseguibile · valutare solo la mobilità'}); }); }
   if(r.fms){ const vals=r.bi?[['Dx ',v.dx],['Sx ',v.sx]]:[['',v.val]]; vals.forEach(([l,x])=>{ if(!x) return; if(/^0/.test(x)) out.flags.push({cls:'bad',txt:l+'dolore durante il test: approfondire'}); else if(x==='1') out.flags.push({cls:'warn',txt:l+'non riesce a eseguire il movimento'}); else if(x==='2') out.flags.push({cls:'warn',txt:l+'esecuzione con compensi'}); });
@@ -381,7 +381,7 @@ const worst = fl => fl.some(f=>f.cls==='bad')?'bad':(fl.some(f=>f.cls==='warn')?
 function hasVal(id,V){ const v=V[id]; return !!v && (v.val||v.dx||v.sx); }
 
 /* ---------- modello per riepilogo / esportazioni ---------- */
-function ctxOf(ev){ return {sex:ev.sex||'', age:n(ev.age), aff:ev.aff||'', affD:ev.affD||{}}; }
+function ctxOf(ev){ return {sex:ev.sex||'', age:n(ev.age), aff:ev.aff||'', affD:ev.affD||{}, prevV:(ev.prev&&ev.prev.values)||null}; }
 function fmtv(r,x){ if(x==null||x==='') return ''; if(r.prov) return x.split(' · ')[0]; if(r.kind==='chk') return {P:'Presente',A:'Assente'}[norm(x)]||''; return r.kind==='sel'?x:x+(r.unit==='°'?'°':(r.unit&&r.unit!=='n'&&r.unit!=='/56'?' '+r.unit:'')); }
 function prevText(r, PV, ctx){
   if(!PV) return '';
